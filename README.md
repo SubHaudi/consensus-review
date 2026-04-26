@@ -34,6 +34,7 @@ consensus-review/
 ├── SKILL.md                          # 스킬 진입점 (에이전트가 읽음)
 ├── README.md                         # 이 파일 (사람이 읽음)
 ├── LICENSE                           # MIT
+├── install.sh                        # 도구별 원샷 설치 스크립트
 ├── prompts/
 │   ├── review.md                     # 서브에이전트용 리뷰 프롬프트
 │   └── aggregate.md                  # 메인 에이전트용 집계 프롬프트
@@ -49,37 +50,60 @@ consensus-review/
 
 ## Installation
 
-### Kiro (AWS)
+### One-line install (recommended)
 
-**Project (현재 워크스페이스에만)**
 ```bash
-mkdir -p .kiro/skills
-cp -r consensus-review .kiro/skills/
+curl -fsSL https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.sh | bash -s <tool>
 ```
 
-**Global (모든 프로젝트)**
+Replace `<tool>` with one of the supported tools below.
+
+| Tool | Argument | Install path |
+|---|---|---|
+| Kiro (global) | `kiro` | `~/.kiro/skills/consensus-review` |
+| Kiro (workspace) | `kiro-local` | `./.kiro/skills/consensus-review` |
+| Claude Code (global) | `claude-code` | `~/.claude/skills/consensus-review` |
+| Claude Code (project) | `claude-local` | `./.claude/skills/consensus-review` |
+| Cursor | `cursor` | `./.cursor/skills/consensus-review` |
+| Codex CLI (user) | `codex` | `~/.agents/skills/consensus-review` |
+| Codex CLI (project) | `codex-local` | `./.agents/skills/consensus-review` |
+| Gemini CLI | `gemini` | `./.gemini/skills/consensus-review` |
+| OpenCode | `opencode` | `./.opencode/skills/consensus-review` |
+| GitHub Copilot | `copilot` | `./.github/skills/consensus-review` |
+
+**Example**:
+
 ```bash
+# Install globally for Kiro
+curl -fsSL https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.sh | bash -s kiro
+
+# Install for Claude Code in current project
+curl -fsSL https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.sh | bash -s claude-local
+```
+
+Run without arguments to see all options: `bash install.sh --help`.
+
+### Manual installation
+
+If you prefer not to pipe curl to bash, clone the repo and copy manually.
+
+**Kiro**
+```bash
+git clone https://github.com/SubHaudi/consensus-review.git
 mkdir -p ~/.kiro/skills
 cp -r consensus-review ~/.kiro/skills/
 ```
 
-또는 Kiro IDE에서 `AGENT STEERING & SKILLS` → `+` → `Import from GitHub URL` → 이 레포 URL.
-
-### Claude Code
-
+**Claude Code**
 ```bash
-# Project-specific
-mkdir -p .claude/skills
-cp -r consensus-review .claude/skills/
-
-# Or global (applies to all projects)
+git clone https://github.com/SubHaudi/consensus-review.git
 mkdir -p ~/.claude/skills
 cp -r consensus-review ~/.claude/skills/
 ```
 
-### Cursor
-
+**Cursor**
 ```bash
+git clone https://github.com/SubHaudi/consensus-review.git
 mkdir -p .cursor/skills
 cp -r consensus-review .cursor/skills/
 ```
@@ -88,21 +112,16 @@ cp -r consensus-review .cursor/skills/
 > 1. Switch to Nightly channel in Cursor Settings → Beta
 > 2. Enable Agent Skills in Cursor Settings → Rules
 
-### Codex CLI
-
+**Codex CLI**
 ```bash
-# Project-local
-mkdir -p .agents/skills
-cp -r consensus-review .agents/skills/
-
-# Or user-wide
+git clone https://github.com/SubHaudi/consensus-review.git
 mkdir -p ~/.agents/skills
 cp -r consensus-review ~/.agents/skills/
 ```
 
-### Gemini CLI
-
+**Gemini CLI**
 ```bash
+git clone https://github.com/SubHaudi/consensus-review.git
 mkdir -p .gemini/skills
 cp -r consensus-review .gemini/skills/
 ```
@@ -113,16 +132,16 @@ cp -r consensus-review .gemini/skills/
 > ```
 > Then run `/settings` and enable "Skills".
 
-### OpenCode
-
+**OpenCode**
 ```bash
+git clone https://github.com/SubHaudi/consensus-review.git
 mkdir -p .opencode/skills
 cp -r consensus-review .opencode/skills/
 ```
 
-### GitHub Copilot
-
+**GitHub Copilot**
 ```bash
+git clone https://github.com/SubHaudi/consensus-review.git
 mkdir -p .github/skills
 cp -r consensus-review .github/skills/
 ```
