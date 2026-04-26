@@ -240,6 +240,17 @@ inconsistencies, and unclear language.
 | 모델 | 사용자 설정 따라감 | 에이전트 툴 설정 |
 | 출력 언어 | 문서 언어 감지 (ko/en) | 사용자 요청으로 강제 가능 |
 | Tier 기준 | 🔴=3/3, 🟡=2/3, ⚪=1/3 | `prompts/aggregate.md` 변경 시 |
+| 결과 파일 저장 | `./consensus-review-{원본}-{YYYYMMDD-HHMMSS}.md` | SKILL.md Step 4 |
+
+### 리뷰 결과 파일 — .gitignore 팁
+
+스킬은 리뷰할 때마다 문서와 같은 디렉토리에 `consensus-review-*.md` 파일을 남깁니다. 버전 관리에서 제외하고 싶다면 `.gitignore`에 다음 한 줄 추가:
+
+```gitignore
+consensus-review-*-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9].md
+```
+
+리뷰 이력을 같이 커밋하고 싶다면 이 줄은 넣지 마세요. 타임스탬프로 파일이 겹치지 않으므로 누적 보관에도 문제 없습니다.
 
 ---
 

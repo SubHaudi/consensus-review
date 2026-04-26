@@ -73,6 +73,10 @@
 
 ---
 
+📄 **Saved to**: `./consensus-review-{원본}-{YYYYMMDD-HHMMSS}.md`
+
+---
+
 ## ℹ️ 이 스킬에 대해
 
 이 리뷰는 **같은 모델로 N명의 독립 리뷰어를 병렬 실행 → 결과 합의 Tier로 분류** 하는 `consensus-review` 스킬에 의해 생성되었습니다.

@@ -1,6 +1,6 @@
 ---
 name: consensus-review
-description: Review documents for defects by running N independent LLM reviewers as subagents, then aggregate findings with consensus-tier labels (🔴 high / 🟡 medium / ⚪ low). Use this skill when the user asks to 리뷰해줘, 문서 검토, 놓친 게 있는지 확인, review a document, find defects, audit a spec, check for issues in a business plan / feature spec / implementation plan / requirements document / technical design doc. Especially useful for 사업계획서, 기능정의서, 구현계획서, PRD, NDA, RFC, or any document where missing a defect has a real cost. The skill increases recall (catches more defects than a single reviewer) and provides tier-based priority for human review.
+description: Review Korean/English documents for defects by running N=3 independent LLM reviewers as parallel subagents, then aggregate findings with consensus-tier labels (🔴 high / 🟡 medium / ⚪ low). Use when the user asks to 리뷰해줘, 문서 검토, 놓친 게 있는지 확인, 기능정의서 리뷰, 요구사항 검토, 사업계획서 검토, 구현계획서 검토, review a document, find defects, audit a spec, check for issues in a PRD / RFC / NDA / requirements / architecture / implementation plan. Trigger for filenames like requirements.md, spec.md, prd.md, design.md, architecture.md, or any document review request. The skill increases recall (catches more defects than a single reviewer) and provides tier-based priority for human review.
 ---
 
 # Consensus Review
@@ -38,23 +38,34 @@ description: Review documents for defects by running N independent LLM reviewers
 
 ### Step 2. N명 독립 리뷰어 실행 (서브에이전트 병렬 호출)
 
-**N=3**을 기본값으로, 3명의 서브에이전트를 병렬로 호출합니다. 각 서브에이전트는:
+**N=3**을 기본값으로, 3명의 서브에이전트를 **병렬로** 호출합니다 (순차 실행 금지). 각 서브에이전트는:
 
 - 동일한 리뷰 프롬프트 (`prompts/review.md`)를 받음
 - 동일한 문서를 받음
 - **서로의 결과를 모름** (독립성이 핵심)
 - 자유 텍스트로 ISS-1, ISS-2, ... 형태의 결함 목록을 출력
 
-서브에이전트에게 전달할 프롬프트는 `prompts/review.md`를 읽어 다음 변수를 치환하세요:
+#### 문서 전달 방식 — 토큰 효율 우선
 
-- `{document}` ← 사용자가 준 문서 전체 (자르지 말 것)
+문서 크기에 따라 다음 두 방식 중 선택하세요:
+
+- **큰 문서 (1,500 단어 또는 5KB 초과)**: 서브에이전트에 **파일 경로만 전달**하고, 서브에이전트가 `read_file` 도구로 직접 읽도록 합니다. 메인 컨텍스트에 원본 + 3개 사본이 쌓이는 걸 방지해 토큰을 절약합니다.
+- **작은 문서**: 리뷰 프롬프트의 `{document}` 변수에 문서 전문을 치환해 전달해도 됩니다.
+
+어느 방식이든 **독립성은 유지**됩니다. 각 서브에이전트는 자기 리뷰에만 집중하고, 다른 리뷰어의 결과를 참조하지 않습니다.
+
+#### 프롬프트 변수 치환
+
+서브에이전트에 전달할 내용:
+
+- `{document}` ← 파일 경로 (큰 문서) 또는 문서 전문 (작은 문서). 자르지 말 것.
 - `{language}` ← "ko" 또는 "en"
-- `{doc_type_hint}` ← "사업계획서", "기능정의서", "구현계획서", "general" 중 하나
+- `{doc_type_hint}` ← "사업계획서", "기능정의서", "구현계획서", "architecture", "general" 중 하나
 
-**중요**:
-- 서브에이전트 3명을 **동시에** 실행하세요 (순차 실행 금지 — 독립성이 깨지지 않지만 시간 낭비)
+**기타 주의**:
+- 서브에이전트 3명을 **동시에** 실행 (병렬)
 - 모델은 사용자의 현재 설정을 따릅니다 (스킬에서 지정 안 함)
-- temperature는 서브에이전트가 기본값을 쓰면 됩니다 (일반적으로 다양성이 확보됨)
+- temperature는 서브에이전트 기본값 사용 (일반적으로 다양성 확보됨)
 
 ### Step 3. 집계 (본인 에이전트가 직접 수행)
 
@@ -68,15 +79,42 @@ description: Review documents for defects by running N independent LLM reviewers
 
 집계 결과는 🔴/🟡/⚪ Tier가 붙은 ISS-1, ISS-2 … 형태의 통합 목록입니다.
 
-### Step 4. 사용자에게 보고
+### Step 4. 사용자에게 보고 + 파일 저장
 
-`examples/output_template.md`의 형식으로 최종 Markdown 리포트를 사용자에게 출력하세요. 내용에는 다음이 반드시 포함되어야 합니다:
+`examples/output_template.md`의 형식으로 최종 Markdown 리포트를 생성합니다. **두 가지 모두 수행**하세요:
+
+#### 4a. 파일로 저장 (기본 동작)
+
+리뷰 대상 문서와 **같은 디렉토리**에 다음 규칙으로 저장:
+
+```
+consensus-review-{원본파일명}-{YYYYMMDD-HHMMSS}.md
+```
+
+- `{원본파일명}`: 확장자 제외 (예: `requirements.md` → `requirements`)
+- `{YYYYMMDD-HHMMSS}`: 실행 시점 기준 초 단위 타임스탬프 (같은 초에 겹칠 확률 ≈ 0)
+- 예시: `consensus-review-requirements-20260426-152410.md`
+
+**같은 문서를 여러 번 리뷰해도 타임스탬프가 달라 덮어쓰지 않습니다.** 리뷰 이력을 자동 보존합니다.
+
+#### 4b. 채팅으로 동시 출력
+
+파일 저장 후, 동일한 내용을 채팅에도 출력해 사용자가 바로 읽을 수 있게 합니다. 채팅 출력에는 **파일 저장 경로를 맨 아래에 명시**:
+
+```
+📄 Saved to: ./consensus-review-requirements-20260426-152410.md
+```
+
+#### 리포트 내용
+
+내용에는 다음이 반드시 포함되어야 합니다:
 
 - **요약 라인**: "총 N개 고유 이슈 (🔴 X, 🟡 Y, ⚪ Z) / Reviewer1: a건, Reviewer2: b건, Reviewer3: c건"
 - **🔴 High Confidence 섹션**: 3명 전원 합의. 상세.
 - **🟡 Needs Review 섹션**: 다수 합의(2/3). 상세.
 - **⚪ Low 섹션**: 소수 지적(1/3). 요약만.
 - **권장 조치 문장**: "🔴부터 우선 검토하세요. 시간 여유가 있으면 🟡까지 보는 것을 권장합니다."
+- **파일 저장 경로 안내** (채팅 출력 시만)
 
 ## 핵심 원칙 (위반 금지)
 
