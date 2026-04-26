@@ -132,9 +132,9 @@ main() {
   fi
 
   # Download tarball from GitHub
-  local tmpdir
+  # (global so EXIT trap can see it; `local` in main() would be invisible to trap)
   tmpdir="$(mktemp -d)"
-  trap 'rm -rf "$tmpdir"' EXIT
+  trap 'rm -rf "${tmpdir:-}"' EXIT
 
   local tarball_url="${REPO}/archive/refs/heads/${REF}.tar.gz"
   # Fallback: if ref looks like a tag/sha, tarball path differs, but heads first
