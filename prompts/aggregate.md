@@ -1,0 +1,124 @@
+# Aggregation Prompt
+
+> 이 프롬프트는 `consensus-review` 스킬의 Step 3에서 메인 에이전트가 직접 실행합니다 (서브에이전트 아님).
+>
+> **변수**:
+> - `{n_agents}` — 리뷰어 수 (기본 3)
+> - `{document}` — 원본 문서 전체
+> - `{reviews}` — 각 리뷰어의 raw 출력. `=== Reviewer 1 ===\n...\n\n=== Reviewer 2 ===\n...` 형태로 이어붙임.
+
+---
+
+You are aggregating results from {n_agents} independent reviewers who examined a document for defects.
+
+Your job: collect all unique findings, merge duplicates, and assign agreement tiers.
+
+**IMPORTANT**: Only report what reviewers explicitly identified. Do not invent, infer, or extrapolate issues beyond what reviewers stated. Adding your own findings will corrupt the aggregation and invalidate the results.
+
+## Merge Rules
+
+**COVERAGE RULE**: Every finding from every reviewer must appear in output — either as its own entry or merged into another. Missing a reviewer's finding is a failure.
+
+**DEFAULT ACTION IS MERGE.** When in doubt, merge.
+
+1. MERGE if two issues describe the SAME underlying problem — same root cause, same consequence — even if quoted text differs.
+2. SEPARATE only if genuinely DIFFERENT problems: different root cause OR different consequence.
+3. When merging, keep the most specific description. Preserve all distinct quotes from each reviewer.
+4. If one reviewer flags it and another says "not a problem", count ONLY those who flagged it as an error.
+
+### Merge Examples
+
+MERGE (same root cause):
+- Reviewer 1: "GDP figure on page 3 says $21T but source says $23T"
+- Reviewer 3: "The GDP number appears incorrect based on the cited report"
+→ One issue. Keep Reviewer 1's version (more specific). Cite both.
+
+SEPARATE (different root cause):
+- Reviewer 1: "GDP figure is wrong — $21T vs $23T"
+- Reviewer 2: "GDP growth rate is wrong — 2.1% vs 3.4%"
+→ Two issues. Different data points, different errors.
+
+## Recognize your own merge biases
+
+You will be tempted to split issues that should be merged:
+- "They quoted different sentences" — different quotes can describe the same error. Merge.
+- "One reviewer was more detailed" — detail level is not a reason to separate. Merge and keep the detailed version.
+- "They used different terminology" — terminology is not root cause. If the underlying problem is the same, merge.
+
+You will also be tempted to merge issues that should be separate:
+- "They're in the same paragraph" — proximity is not sameness. Check root cause.
+- "They're the same type of error" — two typos are two issues if they're different words.
+
+## Preservation Rules
+
+These rules exist because downstream evaluation uses Type, Title, and Reasoning as signals. Rewriting reviewer findings breaks this.
+
+1. **Type preservation**: When merging, use the Type assigned by the MAJORITY of reviewers. Do NOT reclassify based on your own judgment.
+2. **Title preservation**: Use the most specific reviewer's title VERBATIM. Do NOT paraphrase.
+3. **Framing preservation**: Keep the most specific reviewer's reasoning structure intact. You may ADD quotes from other reviewers, but do NOT reframe the core argument.
+4. **Evidence preservation**: Every exact quote cited by any reviewer MUST appear in the merged output. Do not summarize or paraphrase quotes.
+5. **Granularity preservation**: If a reviewer identified two distinct errors in one ISS entry, preserve both as separately identifiable points — or split them.
+
+## Agreement Tiers
+
+- 🔴 **High Confidence**: all {n_agents} reviewers agreed
+- 🟡 **Needs Review**: majority (≥ ceil({n_agents}/2)) but not all
+- ⚪ **Low**: below majority
+
+For {n_agents}=3: 🔴 = 3/3, 🟡 = 2/3, ⚪ = 1/3
+
+## Scoring
+
+**Confidence (1-10)** — How clearly the evidence supports this being a real defect:
+- 9-10: Objectively verifiable (wrong number, broken reference, misspelling)
+- 6-8: Strong evidence but requires interpretation (misleading claim, logical gap)
+- 3-5: Subjective or debatable (tone, emphasis, framing choices)
+- 1-2: Weak — only one vague mention, no supporting quote
+
+**Evidence Strength (1-5)** — Quality of supporting quotes:
+- 5: Exact quote with section reference + external source contradicting it
+- 3-4: Exact quote, reasoning is clear
+- 1-2: Paraphrased or vague reference, no exact quote
+
+## Output Format
+
+For each issue:
+
+```
+### ISS-{number}: {title}
+- Verdict: 🔴 | 🟡 | ⚪
+- Type: {type}
+- Agents: {count}/{n_agents} flagged
+- Confidence: {score}/10 — {justification}
+- Evidence Strength: {score}/5
+- Quotes:
+  📍 "{exact quote}" — Reviewer {id}
+- Reasoning: 1-2 sentences on the defect + merge rationale if merged
+```
+
+Order by: Verdict (🔴 → 🟡 → ⚪), then Confidence descending.
+
+If no issues found across ALL reviewers: respond with exactly "No issues found."
+
+## Edge Cases
+
+- Reviewer output is unparseable or empty → exclude that reviewer. Note: "R{n} excluded (unparseable output)." Adjust denominator accordingly.
+- Reviewers directly contradict on the SAME finding (one flags error, another explicitly says "not a problem") → count only those who flagged it. Note in Reasoning: "R{n} disagreed: {their reason}."
+- All reviewers report 0 issues → respond with exactly "No issues found." Do not search for issues yourself.
+
+## Reminders
+
+- DEFAULT IS MERGE. Prefer fewer well-supported items over many fragments.
+- Only report what reviewers found. Do not add your own findings. Doing so invalidates the aggregation.
+- Every issue from every reviewer must appear — either as its own entry or merged into another.
+- PRESERVE reviewer Type, Title, and Reasoning verbatim. Your role is to deduplicate and vote, not to rewrite.
+
+---
+
+=== DOCUMENT ===
+
+{document}
+
+=== REVIEWER RESULTS ===
+
+{reviews}
