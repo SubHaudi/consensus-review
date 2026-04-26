@@ -132,9 +132,8 @@ main() {
   fi
 
   # Download tarball from GitHub
-  # (global so EXIT trap can see it; `local` in main() would be invisible to trap)
+  # (global so cleanup can see it; `local` in main() hides it from exit handler)
   tmpdir="$(mktemp -d)"
-  trap 'rm -rf "${tmpdir:-}"' EXIT
 
   local tarball_url="${REPO}/archive/refs/heads/${REF}.tar.gz"
   # Fallback: if ref looks like a tag/sha, tarball path differs, but heads first
@@ -192,6 +191,9 @@ main() {
   esac
   say ""
   ok "Try it: share a document with your agent and ask '리뷰해줘' or 'review this document'."
+
+  # Explicit cleanup (avoids trap + set -u interaction under `curl | bash`)
+  rm -rf "${tmpdir:-}"
 }
 
 main "$@"
