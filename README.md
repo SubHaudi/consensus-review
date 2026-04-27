@@ -34,7 +34,8 @@ consensus-review/
 ├── SKILL.md                          # 스킬 진입점 (에이전트가 읽음)
 ├── README.md                         # 이 파일 (사람이 읽음)
 ├── LICENSE                           # MIT
-├── install.sh                        # 도구별 원샷 설치 스크립트
+├── install.sh                        # Linux/macOS 원샷 설치 스크립트
+├── install.ps1                       # Windows PowerShell 설치 스크립트
 ├── prompts/
 │   ├── review.md                     # 서브에이전트용 리뷰 프롬프트
 │   └── aggregate.md                  # 메인 에이전트용 집계 프롬프트
@@ -50,13 +51,32 @@ consensus-review/
 
 ## Installation
 
-### One-line install (recommended)
+### One-line install (Linux / macOS)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.sh | bash -s <tool>
 ```
 
-Replace `<tool>` with one of the supported tools below.
+### One-line install (Windows PowerShell)
+
+**Recommended — download first, then run** (safer, supports interactive overwrite prompts):
+
+```powershell
+irm https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.ps1 -OutFile install.ps1
+.\install.ps1 -Tool kiro
+```
+
+**One-liner via env var** (non-interactive):
+
+```powershell
+$env:CR_TOOL='kiro'; irm https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.ps1 | iex
+```
+
+> **Note:** Windows install requires `tar` (built-in on Windows 10 1803+ and Windows 11) and PowerShell 5.1+.
+
+### Supported tools
+
+Replace `<tool>` / `-Tool` with one of:
 
 | Tool | Argument | Install path |
 |---|---|---|
@@ -74,14 +94,25 @@ Replace `<tool>` with one of the supported tools below.
 **Example**:
 
 ```bash
-# Install globally for Kiro
+# macOS/Linux — Install globally for Kiro
 curl -fsSL https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.sh | bash -s kiro
 
-# Install for Claude Code in current project
+# macOS/Linux — Install for Claude Code in current project
 curl -fsSL https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.sh | bash -s claude-local
 ```
 
-Run without arguments to see all options: `bash install.sh --help`.
+```powershell
+# Windows PowerShell — Install globally for Kiro
+irm https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.ps1 -OutFile install.ps1
+.\install.ps1 -Tool kiro
+
+# Windows PowerShell — Install for Claude Code
+.\install.ps1 -Tool claude-code
+```
+
+Run without arguments to see all options:
+- macOS/Linux: `bash install.sh --help`
+- Windows: `.\install.ps1` (prompts interactively)
 
 ### Manual installation
 
