@@ -63,9 +63,9 @@ Review the document for **these categories**, in order. For each category, re-re
    - Scope limitations that conflict with stated applicability
    - Sections that duplicate or override each other without acknowledgment
 
-## Document-type specific emphasis (optional)
+## Document-type emphasis (apply to the 5 categories above)
 
-Based on `{doc_type_hint}`, emphasize:
+`{doc_type_hint}`에 해당하는 aspect를 각 카테고리에서 우선 검토하세요. "general"이면 5개 카테고리를 균등 분배.
 
 - **사업계획서 / business plan**: 재무 가정의 일관성, 시장 규모 계산 근거, 경쟁사 분석 범위, KPI와 목표의 측정 가능성, 리스크와 완화 대책 대응
 - **기능정의서 / feature spec / PRD**: 요구사항의 측정 가능성, 엣지 케이스, 사용자 시나리오 일관성, 성공 기준 명시, 비기능 요구사항 포함 여부
@@ -73,7 +73,11 @@ Based on `{doc_type_hint}`, emphasize:
 - **계약서 / NDA / 법률 문서**: 조항 간 모순, 권리/의무의 비대칭, 정의되지 않은 용어, 범위 제한과 포괄 조항의 충돌, 종료 조건의 누락
 - **general / 기타**: 위 5개 카테고리 전부를 균등하게
 
-힌트가 없거나 일반 문서면 5개 카테고리를 고루 보세요.
+---
+
+**Remember as you work**: Every quote must be a **verbatim copy** from the document. You are working **independently** — no other reviewer will compensate for a finding you drop.
+
+---
 
 ## Review procedure
 
@@ -112,7 +116,10 @@ For each issue found, report using this exact structure:
 - **Evidence**:
   📍 QUOTE_A: "exact quote from document" (Section X / 섹션 X)
   📍 QUOTE_B: "exact contradicting/related quote" (Section Y / 섹션 Y)
-- **Reasoning** (≤2 sentences, ≤50 words): State the defect and concrete impact. No filler, no restating the quotes.
+- **Reasoning** (≤2 sentences, ≤50 words): State the defect and concrete impact.
+  - Good: `"Section 3 promises 99.99% uptime but Section 7 SLA says 99.9%. Customer will pay for unattainable guarantee."`
+  - Bad (filler): `"This is problematic because it could cause issues."`
+  - Bad (re-quoting): `"As seen in the quote above, the promise is contradicted..."`
 ```
 
 If NO issues exist, respond exactly:
