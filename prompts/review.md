@@ -168,16 +168,49 @@ If you catch yourself wanting to "check what other reviewers found" or "look at 
 
 **필수 단계** (반드시 이 순서대로):
 
-1. **Write your full review to `{output_path}`** using the `write_file` (or `Write`) tool.
+1. **Write your full review to `{output_path}`** using your platform's **native file-writing tool**.
    - Content: the complete ISS-N list in the format defined above.
    - If there are no issues, the file should contain exactly `No issues found.`
 2. **Return a single word to the main agent**: `done`
    - Do **NOT** include any ISS content, summary, or quote in your return message.
    - Do **NOT** paraphrase or abridge the review — the main agent will read `{output_path}` directly.
 
+### 🚨 CRITICAL: Use the NATIVE file-writing tool, NEVER a shell pipeline
+
+**You MUST use the platform's native file-writing tool**:
+- Claude Code / Kiro / Cursor / most agents: **`Write`** or **`write_file`** tool (creates files directly, no shell)
+- The tool takes two arguments: file path and the full content string. It writes the file atomically without involving any terminal.
+
+**❌ ABSOLUTELY FORBIDDEN — never use any of these to produce `{output_path}`**:
+- ❌ `cat > {output_path} << 'EOF' ... EOF` (heredoc)
+- ❌ `echo "..." > {output_path}` or `echo "..." >> {output_path}`
+- ❌ `printf "..." > {output_path}`
+- ❌ `tee {output_path}`
+- ❌ Any shell/bash command that pipes review content through a terminal to the file
+- ❌ Splitting the review into multiple `>>` append commands
+
+**Why this matters — real bug observed in the wild (2026-04-28, Kiro)**:
+
+When an agent writes a **long review via terminal heredoc** (`cat > file << EOF`), the shell integration streams the content as stdin chunks. This breaks in several ways:
+
+1. **UTF-8 multibyte boundary corruption** — Korean/Chinese/emoji characters occupy 2-4 bytes. If a chunk boundary splits a character, the reconstruction fails and produces `\ufffd` (replacement char) or escape sequences like `\u001b[7m<ffffffff>\u001b[27m` embedded in the file.
+2. **Silent truncation** — 169KB of content was submitted but only 43KB was written before the shell buffer gave up. No error, no completion event, just a half-written file.
+3. **Duplicated / injected fragments** — terminal bracketed-paste or readline completion can re-inject earlier content or hallucinate fragments that were never in the source (e.g., duplicate ISS blocks).
+
+**The `Write` / `write_file` tool has none of these issues** — it's a direct filesystem call with one UTF-8 encoded payload.
+
+### 📏 Verify after writing
+
+After the `Write` call succeeds, **do a quick sanity check** before returning `done`:
+
+1. **Size check**: The written file should be at least 90% of your expected content length. If drastically smaller (e.g., 43KB when you intended 169KB), the write was truncated.
+2. **Tail check** (optional): If your platform lets you read back the last few lines, confirm the file ends as expected (e.g., the last ISS-N block, or `No issues found.`).
+
+If the check fails: **report the error in the return message** (e.g., `write_failed: size 43127 < expected 169000`). Do **NOT** retry with a shell heredoc as a fallback — it will fail the same way or worse.
+
 **Why**: If you put the full review in the return message, the platform may auto-summarize it before the main agent sees it, which breaks Preservation Rules in the aggregator. The file is the authoritative output.
 
-**If `write_file` fails**: report the error in the return message instead of `done`. Do NOT inline the review text as a fallback.
+**If `write_file` itself is unavailable**: report the error in the return message instead of `done`. Do NOT inline the review text in the return message as a fallback, and do NOT fall back to shell heredoc.
 
 ---
 
@@ -186,6 +219,6 @@ If you catch yourself wanting to "check what other reviewers found" or "look at 
 - Your output will be combined with **OTHER INDEPENDENT reviewers**. Do not assume what they will or will not find — review every category yourself.
 - Every quote MUST be a **verbatim copy** from the document. Paraphrasing invalidates the finding.
 - **Recall is the goal.** Zero issues is valid; forced issues are not.
-- **Write the review to `{output_path}`. Return `done`.** Never inline the review in the return message.
+- **Write the review to `{output_path}` using the native `Write`/`write_file` tool. Return `done`.** Never inline the review in the return message, and **never use shell heredoc / echo / printf** — they corrupt UTF-8 and truncate.
 
-Begin reviewing now. Save to `{output_path}` when finished.
+Begin reviewing now. Save to `{output_path}` **with the `Write` tool** when finished.
