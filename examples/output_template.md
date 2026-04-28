@@ -63,22 +63,25 @@
 
 ### ISS-1: {제목 ≤12 단어}
 
+- **Verdict**: 🔴
 - **Type**: {Inconsistency / Omission / Ambiguity / Terminology / Structural}
 - **Severity**: {CRITICAL / MAJOR / MINOR}
-- **Confidence**: {1-10}/10
-- **Evidence Strength**: {1-5}/5
+- **Agents**: {count}/{N} flagged
+- **Confidence**: {median}/10 (R1: {x}, R2: {y}, R3: {z})
+- **Evidence Strength**: {median}/5
 - **Quotes**:
   - 📍 "{exact quote}" — Reviewer 1
   - 📍 "{exact quote}" — Reviewer 2
   - 📍 "{exact quote}" — Reviewer 3
-- **Reasoning**: {≤40 words, 1-2 문장}
+- **Reasoning**: {≤40 words}
 
 ### ISS-2: ...
 
 ---
 
 ## 🟡 Needs Review — 다수 합의 ({Y}개)
-... (🔴와 동일 포맷)
+
+🔴와 동일 포맷. `Verdict`만 🟡로 변경.
 
 ---
 
@@ -157,24 +160,14 @@
 
 ---
 
-## === 실패 분기 ===
+## === 실패 및 분기 ===
 
-- **파일 쓰기 실패** → 재시도 1회. 재시도도 실패하면 채팅에 `"❌ 파일 저장 실패: {에러}. 저장 없이 진행할까요?"`만 출력. **본문을 채팅에 대신 덤프하지 마세요** — InvalidJson이 납니다.
+- **파일 쓰기 실패** → 재시도 1회. 실패하면 채팅에 `"❌ 파일 저장 실패: {에러}. 저장 없이 진행할까요?"`만 출력. **본문을 채팅에 덤프 금지** — InvalidJson이 납니다.
 - **🔴 0개** → `"🔴 High Confidence: 없음"` 한 줄. TOP 3 섹션 생략.
 - **총 이슈 0개** → B 템플릿 대신 `"✅ Consensus Review 완료 — 지적된 이슈 없음. 파일: {경로}"`만.
-- **사용자가 최초 요청에서 "상세도 채팅에 보여줘"를 명시** → A 템플릿 채팅 출력 허용. 그 외엔 불허.
-
----
-
-## "ISS-N 자세히" 같은 on-demand 요청 처리
-
-**상세 요청으로 인정되는 표현** (Good):
-- "ISS-5 자세히", "ISS-5 펼쳐", "전체 상세", "full report", "다 보여줘"
-
-**상세 요청이 아닌 것** (요약 범위 내에서만 대응):
-- "뭐가 중요해?", "요약 다시", "TOP 5로 늘려"
-
-애매하면 상세를 주지 말고 `"파일을 열어보시겠어요, 아니면 특정 ISS-N을 펼쳐드릴까요?"`로 되묻기.
+- **사용자가 "상세 보기" 명시** (Good 표현: "ISS-5 자세히", "ISS-5 펼쳐", "전체 상세", "full report", "다 보여줘") → 해당 이슈만 채팅에 출력.
+- **상세 요청 아님** (Bad 표현: "뭐가 중요해?", "요약 다시", "TOP 5로 늘려") → B 템플릿 범위 내 조정.
+- **애매하면** → `"파일을 열어보시겠어요, 아니면 특정 ISS-N을 펼쳐드릴까요?"`로 되묻기.
 
 ---
 
