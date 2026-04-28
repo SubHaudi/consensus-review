@@ -89,6 +89,17 @@ description: Review Korean/English documents for defects by running N=3 independ
 
 `examples/output_template.md`의 형식으로 최종 Markdown 리포트를 생성합니다. **파일 저장이 기본이고, 채팅 출력은 요약만 합니다.**
 
+> 🚨 **Critical — 토큰 고갈 방지 규칙**
+>
+> 전체 리포트 본문은 **한 응답에 한 번만** 등장해야 합니다.
+> `write.content` 안에만 전문을 넣고, 같은 턴의 `assistant_text`에는 **전문을 복제하지 마세요** (짧은 요약만).
+> 전문을 두 번 출력하려 하면 `max_output_tokens`를 넘겨 write의 JSON이 잘리고 파일 저장이 실패합니다 (2026-04-28 실제 사고).
+>
+> **순서**:
+> 1. 먼저 `write` 툴 호출 — `content` 인자에 전체 리포트 Markdown 전문
+> 2. 같은 응답의 `assistant_text`에는 **짧은 요약만** (아래 4b 포맷)
+> 3. 전문을 assistant_text에도 출력하는 행동은 **금지**
+
 #### 4a. 파일로 전체 리포트 저장 (기본 동작)
 
 리뷰 대상 문서와 **같은 디렉토리**에 다음 규칙으로 저장:
