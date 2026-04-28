@@ -3,7 +3,7 @@
 > 이 프롬프트는 `consensus-review` 스킬의 Step 2에서 서브에이전트에게 전달됩니다. 메인 에이전트가 변수를 치환한 뒤 서브에이전트를 실행하세요.
 >
 > **변수**:
-> - `{document}` — 사용자가 준 원본 문서 (잘림 없음)
+> - `{document_path}` — 검토할 문서의 **파일 경로** (기본). 또는 500단어/2KB 미만 **인라인 텍스트** (예외).
 > - `{language}` — "ko" 또는 "en"
 > - `{doc_type_hint}` — "사업계획서", "기능정의서", "구현계획서", "general", "PRD", "NDA" 등
 
@@ -103,6 +103,12 @@ No issues found.
 
 ---
 
-Document:
+## Document to review
 
-{document}
+**Path (or inline text)**: `{document_path}`
+
+**How to load**:
+- If `{document_path}` looks like a filesystem path (starts with `/`, `./`, `../`, `~`, or contains `/`), use the `read_file` (or `Read`) tool to load the full content. **Read the ENTIRE file — do not skip, truncate, or summarize sections.**
+- If the value is clearly inline text (doesn't look like a path), treat it directly as the document content.
+
+Review the document you loaded/received according to the rules above and output findings in the ISS-N format.
