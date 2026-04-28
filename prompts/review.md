@@ -4,6 +4,7 @@
 >
 > **변수**:
 > - `{document_path}` — 검토할 문서의 **파일 경로** (기본). 또는 500단어/2KB 미만 **인라인 텍스트** (예외).
+> - `{output_path}` — 리뷰 결과를 **저장할 파일 경로** (예: `/tmp/consensus-review-20260428-022810-a3f7/reviewer-1.md`). 메인 에이전트가 세션마다 고유 경로를 할당합니다.
 > - `{language}` — "ko" 또는 "en"
 > - `{doc_type_hint}` — "사업계획서", "기능정의서", "구현계획서", "general", "PRD", "NDA" 등
 
@@ -147,6 +148,37 @@ No issues found.
 - If `{document_path}` looks like a filesystem path (starts with `/`, `./`, `../`, `~`, or contains `/`), use the `read_file` (or `Read`) tool to load the full content. **Read the ENTIRE file — do not skip, truncate, or summarize sections.**
 - If the value is clearly inline text (doesn't look like a path), treat it directly as the document content.
 
+## 🚫 === ISOLATION MODE — DO NOT READ ANY OTHER FILE ===
+
+You are a **fully independent reviewer**. Your judgment must not be influenced by other reviewers or past reviews.
+
+**Files you are STRICTLY PROHIBITED from reading**:
+- ❌ **Any other reviewer's output file** in the same session. Do not read `reviewer-2.md`, `reviewer-3.md`, or any sibling file in your `{output_path}` directory.
+- ❌ **Any file under `/tmp/consensus-review-*/`** from a previous session.
+- ❌ **Any existing `consensus-review-*.md` aggregated report** (past results of this skill).
+- ❌ **Main agent's conversation history** referring to "previous reviews" or other reviewers' findings.
+
+**Files you ARE allowed to read**:
+- ✅ `{document_path}` — the document under review.
+- ✅ Files **explicitly referenced inside `{document_path}`** as necessary to understand the document itself (e.g., a schema the doc references). Stay minimal.
+
+If you catch yourself wanting to "check what other reviewers found" or "look at the previous run to avoid duplicates", stop. That would break the consensus-review design.
+
+## 📝 Output: write to file, return only "done"
+
+**필수 단계** (반드시 이 순서대로):
+
+1. **Write your full review to `{output_path}`** using the `write_file` (or `Write`) tool.
+   - Content: the complete ISS-N list in the format defined above.
+   - If there are no issues, the file should contain exactly `No issues found.`
+2. **Return a single word to the main agent**: `done`
+   - Do **NOT** include any ISS content, summary, or quote in your return message.
+   - Do **NOT** paraphrase or abridge the review — the main agent will read `{output_path}` directly.
+
+**Why**: If you put the full review in the return message, the platform may auto-summarize it before the main agent sees it, which breaks Preservation Rules in the aggregator. The file is the authoritative output.
+
+**If `write_file` fails**: report the error in the return message instead of `done`. Do NOT inline the review text as a fallback.
+
 ---
 
 ## REMEMBER
@@ -154,5 +186,6 @@ No issues found.
 - Your output will be combined with **OTHER INDEPENDENT reviewers**. Do not assume what they will or will not find — review every category yourself.
 - Every quote MUST be a **verbatim copy** from the document. Paraphrasing invalidates the finding.
 - **Recall is the goal.** Zero issues is valid; forced issues are not.
+- **Write the review to `{output_path}`. Return `done`.** Never inline the review in the return message.
 
-Output findings in the ISS-N format now.
+Begin reviewing now. Save to `{output_path}` when finished.
