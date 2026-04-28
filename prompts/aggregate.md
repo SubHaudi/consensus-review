@@ -19,7 +19,7 @@ Your job: collect all unique findings, merge duplicates, and assign agreement ti
 
 **COVERAGE RULE**: Every finding from every reviewer must appear in output — either as its own entry or merged into another. Missing a reviewer's finding is a failure.
 
-**DEFAULT ACTION IS MERGE.** When in doubt, merge.
+**DEFAULT ACTION IS MERGE.** When in doubt, merge. **Over-splitting fragments the consensus signal and inflates the issue count** — this breaks downstream tier classification and recall measurement.
 
 1. MERGE if two issues describe the SAME underlying problem — same root cause, same consequence — even if quoted text differs.
 2. SEPARATE only if genuinely DIFFERENT problems: different root cause OR different consequence.
@@ -49,6 +49,8 @@ You will also be tempted to merge issues that should be separate:
 - "They're in the same paragraph" — proximity is not sameness. Check root cause.
 - "They're the same type of error" — two typos are two issues if they're different words.
 
+**If you catch yourself justifying a merge with "close enough" or a split with "slightly different wording", stop.** Re-check root cause and consequence — if they match, merge; otherwise split. Do not rationalize past the rule.
+
 ## Preservation Rules
 
 These rules exist because downstream evaluation uses Type, Title, and Reasoning as signals. Rewriting reviewer findings breaks this.
@@ -57,7 +59,11 @@ These rules exist because downstream evaluation uses Type, Title, and Reasoning 
 2. **Title preservation**: Use the most specific reviewer's title VERBATIM. Do NOT paraphrase.
 3. **Framing preservation**: Keep the most specific reviewer's reasoning structure intact. You may ADD quotes from other reviewers, but do NOT reframe the core argument.
 4. **Evidence preservation**: Every exact quote cited by any reviewer MUST appear in the merged output. Do not summarize or paraphrase quotes.
-5. **Granularity preservation**: If a reviewer identified two distinct errors in one ISS entry, preserve both as separately identifiable points — or split them.
+5. **Granularity preservation**: If a reviewer packed multiple distinct errors into one ISS entry, preserve each separately — either as sub-points within the merged entry or as separate issues.
+
+   **Example**:
+   - Reviewer 2 ISS-4: "Table 2 has two problems: the units column says 'kg' but should be 'g', and the total row sums wrong."
+   → Split into two ISS entries (different root causes: unit error vs arithmetic error), or keep one entry with two clearly-labeled sub-points. **Do not collapse into "Table 2 has errors."**
 
 ## Agreement Tiers
 
@@ -66,6 +72,10 @@ These rules exist because downstream evaluation uses Type, Title, and Reasoning 
 - ⚪ **Low**: below majority
 
 For {n_agents}=3: 🔴 = 3/3, 🟡 = 2/3, ⚪ = 1/3
+
+**Examples for other n**:
+- {n_agents}=5: 🔴 = 5/5, 🟡 = 3–4/5, ⚪ = 1–2/5
+- {n_agents}=7: 🔴 = 7/7, 🟡 = 4–6/7, ⚪ = 1–3/7
 
 ## Scoring
 
@@ -93,7 +103,7 @@ For each issue:
 - Evidence Strength: {score}/5
 - Quotes:
   📍 "{exact quote}" — Reviewer {id}
-- Reasoning: 1-2 sentences on the defect + merge rationale if merged
+- Reasoning: ≤40 words. State the defect in one sentence. If merged, add one sentence explaining why the quotes describe the same root cause. If split, omit the merge clause.
 ```
 
 Order by: Verdict (🔴 → 🟡 → ⚪), then Confidence descending.
@@ -102,9 +112,10 @@ If no issues found across ALL reviewers: respond with exactly "No issues found."
 
 ## Edge Cases
 
-- Reviewer output is unparseable or empty → exclude that reviewer. Note: "R{n} excluded (unparseable output)." Adjust denominator accordingly.
-- Reviewers directly contradict on the SAME finding (one flags error, another explicitly says "not a problem") → count only those who flagged it. Note in Reasoning: "R{n} disagreed: {their reason}."
-- All reviewers report 0 issues → respond with exactly "No issues found." Do not search for issues yourself.
+- Reviewer output is empty, contains no ISS-N entries, or cannot be split into discrete findings → exclude that reviewer. Note: `"R{n} excluded (reason: {empty | no ISS entries | unstructured})"`. Adjust denominator accordingly.
+- Single reviewer duplicates the same finding across multiple ISS entries within their own output → count as **ONE flag** from that reviewer. Preserve all quotes, but do not inflate the denominator.
+- Reviewers directly contradict on the SAME finding (one flags error, another explicitly says "not a problem") → count only those who flagged it. Note in Reasoning: `"R{n} disagreed: {their reason}"`.
+- All reviewers report 0 issues → respond with exactly "No issues found." **Do not search for issues yourself.**
 
 ## Reminders
 

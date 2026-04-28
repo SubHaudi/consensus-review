@@ -1,6 +1,6 @@
 ---
 name: consensus-review
-description: Review Korean/English documents for defects by running N=3 independent LLM reviewers as parallel subagents, then aggregate findings with consensus-tier labels (🔴 high / 🟡 medium / ⚪ low). Use when the user asks to 리뷰해줘, 문서 검토, 놓친 게 있는지 확인, 기능정의서 리뷰, 요구사항 검토, 사업계획서 검토, 구현계획서 검토, review a document, find defects, audit a spec, check for issues in a PRD / RFC / NDA / requirements / architecture / implementation plan. Trigger for filenames like requirements.md, spec.md, prd.md, design.md, architecture.md, or any document review request. The skill increases recall (catches more defects than a single reviewer) and provides tier-based priority for human review.
+description: Review Korean/English documents for defects by running N=3 independent LLM reviewers as parallel subagents, then aggregate findings with consensus-tier labels (🔴 high / 🟡 medium / ⚪ low). Use when the user asks to 리뷰해줘, 문서 검토, 놓친 게 있는지 확인, 기능정의서 리뷰, 요구사항 검토, 사업계획서 검토, 구현계획서 검토, review a document, find defects, audit a spec, check for issues in a PRD / RFC / NDA / requirements / architecture / implementation plan. Trigger for filenames like requirements.md, spec.md, prd.md, design.md, architecture.md. NOT for: simple typo/grammar fixes, translation proofreading, documents under 500 words, 가벼운 편집 요청. The skill increases recall (catches more defects than a single reviewer) and provides tier-based priority for human review.
 ---
 
 # Consensus Review
@@ -28,22 +28,35 @@ description: Review Korean/English documents for defects by running N=3 independ
 - "이 문서에 결함 있는지 확인", "issues in this doc", "review this spec"
 - 긴 문서(1,000 단어 이상)를 붙여넣고 "체크해줘" 류의 요청
 
-단, **단순한 문법 교정, 오탈자 수정, 번역 수정**처럼 "가벼운 편집 요청"에는 쓰지 마세요. 이 스킬은 결함 탐지(defects detection)용이고, 리뷰 한 번에 N배 토큰을 사용하므로 가벼운 요청에는 과합니다.
+단, **단순한 문법 교정, 오탈자 수정, 번역 수정**처럼 가벼운 편집 요청에는 쓰지 마세요. 이 스킬은 결함 탐지용이며 한 번 실행에 기본 3배 토큰과 3개 병렬 서브에이전트 비용이 듭니다. **500 단어 미만 문서나 단일 문장 교정 요청에는 쓰지 마세요.**
 
 ## 실행 단계
 
 ### Step 1. 문서 준비
 
-사용자가 준 문서를 확인하세요. 파일 경로면 읽고, 인라인 텍스트면 그대로 사용합니다. 문서의 **언어(한국어/영어)**와 **유형 힌트**(사업계획서/기능정의서/구현계획서/PRD/NDA 등)를 판단합니다.
+1. 파일 경로가 주어지면 그대로 사용. 인라인 텍스트면 500 단어/2KB 미만일 때만 그대로, 초과 시 `/tmp/consensus-review-input-{YYYYMMDD-HHMMSS}.md`로 저장 후 경로 사용.
+2. `{language}`: 문서 전반이 한글 문자 ≥50%면 "ko", 아니면 "en".
+3. `{doc_type_hint}`: 파일명에 `prd|spec|requirements|nda|rfc|architecture` 매치 또는 본문 첫 200자에서 직접 매치되는 키워드 → 해당 유형. 매치 없으면 "general".
+
+**예시**: `requirements.md` → "requirements"; 본문에 "1조(목적)", "비밀유지" → "NDA".
 
 ### Step 2. N명 독립 리뷰어 실행 (서브에이전트 병렬 호출)
+
+> 🚨 **=== CRITICAL: INDEPENDENCE MODE — REVIEWERS MUST NOT SEE EACH OTHER ===**
+>
+> You are STRICTLY PROHIBITED from:
+> - 한 리뷰어의 출력을 다른 리뷰어에게 전달
+> - 리뷰 프롬프트에 다른 리뷰어를 언급
+> - 리뷰어 호출을 직렬화하여 뒤 리뷰어가 앞 리뷰어 상태를 관찰
+>
+> 독립성이 이 스킬의 존재 이유입니다. 위반 시 이 스킬의 핵심 효과(확률적 커버리지로 +6.5~30.6%p 재현율 향상)가 사라집니다.
 
 **N=3**을 기본값으로, 3명의 서브에이전트를 **병렬로** 호출합니다 (순차 실행 금지). 각 서브에이전트는:
 
 - 동일한 리뷰 프롬프트 (`prompts/review.md`)를 받음
 - 동일한 문서를 받음
 - **서로의 결과를 모름** (독립성이 핵심)
-- 자유 텍스트로 ISS-1, ISS-2, ... 형태의 결함 목록을 출력
+- 자유 텍스트로 `ISS-N` 형태의 결함 목록을 출력. 각 항목은 최소 `Title / Type / Severity / Confidence / Evidence Strength / Quote(원문 그대로) / Reasoning` 필드를 포함. 상세 포맷과 앵커는 `prompts/review.md` 참조. **JSON을 강제하지 마세요** — JSON 파싱 에러가 나면 리뷰 결과가 통째로 날아갑니다 (2026-04-28 사고).
 
 #### 문서 전달 방식 — 파일 경로 우선 (기본값)
 
@@ -70,10 +83,20 @@ description: Review Korean/English documents for defects by running N=3 independ
 
 **기타 주의**:
 - 서브에이전트 3명을 **동시에** 실행 (병렬)
-- 모델은 사용자의 현재 설정을 따릅니다 (스킬에서 지정 안 함)
-- temperature는 서브에이전트 기본값 사용 (일반적으로 다양성 확보됨)
+- 모델은 사용자의 현재 설정을 따릅니다 (스킬에서 지정 안 함). 최소 요구치: context window ≥ 200K. 그 미만 모델이 감지되면 사용자에게 알리고 중단.
+- temperature는 서브에이전트 기본값 사용. 벤치마크(6 LLM × 3 benchmark) 기준 temperature=0.7~1.0 구간에서 재현율이 단조 증가. **0.3 미만으로 낮추지 마세요** — 독립성이 깨집니다.
+
+#### 차단 상황 분기 (Blocked Approach)
+
+실패/한계 상황에서 임의로 돌파하지 말고 아래 경로를 따르세요:
+
+- **문서 > 60K 토큰**: 청크 분할은 아직 미구현. 사용자에게 알리고 중단: *"문서가 60K 토큰을 초과합니다(X 토큰). 현재 버전은 청크 분할을 지원하지 않습니다. 섹션을 나눠서 주시겠습니까?"* **임의로 자르거나 요약하지 마세요**.
+- **`/tmp` 저장 실패** (디스크 풀/권한): 사용자에게 원인과 함께 보고하고 중단. **인라인 전달로 우회하지 마세요** — 토큰 한도를 넘겨 InvalidJson이 납니다.
+- **서브에이전트 3명 중 1명이 실패/타임아웃**: 남은 2명으로 진행하되 리포트 상단에 `"Reviewer X 실패 — N=2로 집계됨"`을 명시. 실패한 리뷰어를 같은 프롬프트로 재시도하지 마세요 (차단 원인이 동일할 가능성이 높음).
 
 ### Step 3. 집계 (본인 에이전트가 직접 수행)
+
+> 🚨 **REMEMBER**: By Step 3 the reviewers have finished independently. 메인 에이전트(당신)만이 세 개의 출력을 모두 볼 수 있습니다. 통합한 출력을 어떤 리뷰어에게도 "refinement"용으로 되돌려 보내지 마세요.
 
 3명의 raw 결과 + 원본 문서를 `prompts/aggregate.md` 프롬프트에 넣고 본인(메인 에이전트)이 집계합니다. 서브에이전트를 또 만들 필요 없습니다 — 집계는 1회 호출.
 
@@ -117,7 +140,7 @@ description: Review Korean/English documents for defects by running N=3 independ
 
 #### 4a. 파일로 전체 리포트 저장 (기본 동작)
 
-이 단계에서 `write` 툴을 호출합니다. **같은 턴의 `assistant_text`에는 집계 결과 본문이나 🔴 이슈 Quote/Reasoning을 절대 출력하지 마세요.** 그건 Step 4b 요약에만 갑니다.
+이 단계에서 `write` 툴을 호출합니다. (불변식 재확인: `write.content`에만 전체 본문, `assistant_text`에는 Step 4b 요약만.)
 
 리뷰 대상 문서와 **같은 디렉토리**에 다음 규칙으로 저장:
 
