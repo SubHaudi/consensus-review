@@ -1,6 +1,6 @@
 ---
 name: consensus-review
-description: Review Korean/English documents for defects by running N=3 independent LLM reviewers as parallel subagents, then aggregate findings with consensus-tier labels (🔴 high / 🟡 medium / ⚪ low). Use when the user asks to 리뷰해줘, 문서 검토, 놓친 게 있는지 확인, 기능정의서 리뷰, 요구사항 검토, 사업계획서 검토, 구현계획서 검토, review a document, find defects, audit a spec, check for issues in a PRD / RFC / NDA / requirements / architecture / implementation plan. Trigger for filenames like requirements.md, spec.md, prd.md, design.md, architecture.md. NOT for: simple typo/grammar fixes, translation proofreading, documents under 500 words, 가벼운 편집 요청. The skill increases recall (catches more defects than a single reviewer) and provides tier-based priority for human review.
+description: "Review Korean/English documents for defects by running N=3 independent LLM reviewers as parallel subagents, then aggregate findings with consensus-tier labels (🔴 high / 🟡 medium / ⚪ low). Use when the user asks to 리뷰해줘, 문서 검토, 놓친 게 있는지 확인, 기능정의서 리뷰, 요구사항 검토, 사업계획서 검토, 구현계획서 검토, review a document, find defects, audit a spec, check for issues in a PRD / RFC / NDA / requirements / architecture / implementation plan. Trigger for filenames like requirements.md, spec.md, prd.md, design.md, architecture.md. NOT for: simple typo/grammar fixes, translation proofreading, documents under 500 words, 가벼운 편집 요청. The skill increases recall (catches more defects than a single reviewer) and provides tier-based priority for human review."
 ---
 
 # Consensus Review
