@@ -85,22 +85,39 @@ description: Review Korean/English documents for defects by running N=3 independ
 
 집계 결과는 🔴/🟡/⚪ Tier가 붙은 ISS-1, ISS-2 … 형태의 통합 목록입니다.
 
+> 🚨 **중요 — 집계 결과를 `assistant_text`로 출력하지 마세요.**
+>
+> 집계 결과(전체 이슈 목록)는 **내부 산출물**입니다. 채팅 응답 텍스트로 찍지 말고, **곧바로 Step 4a의 `write` 툴 호출의 `content` 인자로 전달**하세요.
+>
+> 이를 어기면 같은 리포트가 응답 텍스트와 `write.content`에 이중 출력되어 `max_output_tokens`를 넘기고 `InvalidJson`으로 잘립니다 (2026-04-28 실제 사고).
+
 ### Step 4. 사용자에게 보고 + 파일 저장
 
 `examples/output_template.md`의 형식으로 최종 Markdown 리포트를 생성합니다. **파일 저장이 기본이고, 채팅 출력은 요약만 합니다.**
 
-> 🚨 **Critical — 토큰 고갈 방지 규칙**
+> 🔒 **불변식 (Invariant) — 반드시 지켜야 하는 규칙**
 >
-> 전체 리포트 본문은 **한 응답에 한 번만** 등장해야 합니다.
-> `write.content` 안에만 전문을 넣고, 같은 턴의 `assistant_text`에는 **전문을 복제하지 마세요** (짧은 요약만).
-> 전문을 두 번 출력하려 하면 `max_output_tokens`를 넘겨 write의 JSON이 잘리고 파일 저장이 실패합니다 (2026-04-28 실제 사고).
+> **전체 리포트 본문은 한 응답에 오직 한 곳에만 등장합니다** — `write` 툴의 `content` 인자입니다.
+>
+> - `write.content` ← 전체 리포트 Markdown 전문 (✅ 여기 한 번)
+> - `assistant_text` (채팅) ← **Step 4b의 짧은 요약 템플릿만** (✅ 요약만)
+>
+> 이 불변식을 지키면 출력 토큰이 절반으로 줄어 대형 리포트에서도 JSON이 잘리지 않습니다.
+>
+> **자주 하는 실수 — 이렇게 하지 마세요**:
+>
+> - ❌ assistant_text에 "집계 결과를 먼저 보여주고" 이어서 write 호출 — 본문이 두 번 등장
+> - ❌ Step 4b의 요약에 이슈 전체 상세(Quote, Reasoning)를 포함 — TOP 3 **제목만**
+> - ❌ "파일에 저장 예정입니다" 같은 선언 후 본문을 채팅에 먼저 찍기 — write가 먼저 호출돼야 함
 >
 > **순서**:
-> 1. 먼저 `write` 툴 호출 — `content` 인자에 전체 리포트 Markdown 전문
-> 2. 같은 응답의 `assistant_text`에는 **짧은 요약만** (아래 4b 포맷)
-> 3. 전문을 assistant_text에도 출력하는 행동은 **금지**
+> 1. 먼저 `write` 툴 호출 — `content`에 전체 리포트 Markdown
+> 2. 같은 응답의 `assistant_text`에는 Step 4b의 **짧은 요약 템플릿만**
+> 3. Step 3 집계 결과를 중간에 채팅에 덤프하는 행동 **금지**
 
 #### 4a. 파일로 전체 리포트 저장 (기본 동작)
+
+이 단계에서 `write` 툴을 호출합니다. **같은 턴의 `assistant_text`에는 집계 결과 본문이나 🔴 이슈 Quote/Reasoning을 절대 출력하지 마세요.** 그건 Step 4b 요약에만 갑니다.
 
 리뷰 대상 문서와 **같은 디렉토리**에 다음 규칙으로 저장:
 
