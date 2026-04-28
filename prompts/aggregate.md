@@ -77,18 +77,15 @@ For {n_agents}=3: 🔴 = 3/3, 🟡 = 2/3, ⚪ = 1/3
 - {n_agents}=5: 🔴 = 5/5, 🟡 = 3–4/5, ⚪ = 1–2/5
 - {n_agents}=7: 🔴 = 7/7, 🟡 = 4–6/7, ⚪ = 1–3/7
 
-## Scoring
+## Scoring (리뷰어 값 재사용)
 
-**Confidence (1-10)** — How clearly the evidence supports this being a real defect:
-- 9-10: Objectively verifiable (wrong number, broken reference, misspelling)
-- 6-8: Strong evidence but requires interpretation (misleading claim, logical gap)
-- 3-5: Subjective or debatable (tone, emphasis, framing choices)
-- 1-2: Weak — only one vague mention, no supporting quote
+리뷰어가 이미 각 ISS에 Confidence(1-10)와 Evidence Strength(1-5)를 부여했습니다 (`prompts/review.md`의 앵커 정의 참조). Aggregator는 **재평가하지 말고** 리뷰어 값을 그대로 사용하세요.
 
-**Evidence Strength (1-5)** — Quality of supporting quotes:
-- 5: Exact quote with section reference + external source contradicting it
-- 3-4: Exact quote, reasoning is clear
-- 1-2: Paraphrased or vague reference, no exact quote
+- 복수 리뷰어가 같은 이슈에 서로 다른 값을 준 경우: **중앙값(median)**을 output에 기록. 괄호 안에 개별 값도 표기.
+  - 예: `Confidence: 7 (R1: 8, R2: 7, R3: 5)`
+- 단일 리뷰어만 점수를 준 경우: 그 값 그대로.
+
+기준 재정의는 **금지** — 리뷰어의 앵커 정의(Confidence 9-10 = "direct contradiction with two exact quotes" 등)가 시스템 기준입니다.
 
 ## Output Format
 
@@ -107,6 +104,12 @@ For each issue:
 ```
 
 Order by: Verdict (🔴 → 🟡 → ⚪), then Confidence descending.
+
+**Reasoning 예시**:
+- Good (merged): `"Section 3과 7이 uptime SLA 99.99% vs 99.9%로 상충 (R1·R3). 동일 root cause — uptime 계약 불이행."`
+- Good (split): `"Section 4 결제 흐름에 refund 경로 누락."`
+- Bad (re-quoting filler): `"As Reviewer 1 noted, Section 3 says 99.99%..."`
+- Bad (vague): `"This causes inconsistency."`
 
 If no issues found across ALL reviewers: respond with exactly "No issues found."
 
