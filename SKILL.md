@@ -11,11 +11,18 @@ N명의 독립 서브에이전트 리뷰어를 병렬 실행해 문서 결함을
 
 ### Step 1. 문서 준비
 
-1. 파일 경로가 주어지면 그대로 사용. 인라인 텍스트면 500 단어/2KB 미만일 때만 그대로, 초과 시 `/tmp/consensus-review-input-{YYYYMMDD-HHMMSS}.md`로 저장 후 경로 사용.
-2. `{language}`: 문서 전반이 한글 문자 ≥50%면 "ko", 아니면 "en".
-3. `{doc_type_hint}`: 파일명에 `prd|spec|requirements|nda|rfc|architecture` 매치 또는 본문 첫 200자에서 직접 매치되는 키워드 → 해당 유형. 매치 없으면 "general".
+1. **PROJECT_DIR 결정** (모든 산출물의 기준 디렉토리):
+   - 입력이 **파일 경로**면 → `PROJECT_DIR = dirname(document_path)` (해당 파일이 있는 디렉토리)
+   - 입력이 **인라인 텍스트**면 → `PROJECT_DIR = cwd` (현재 작업 디렉토리)
+2. **문서 로드**:
+   - 파일 경로면 그대로 사용.
+   - 인라인 텍스트면 500 단어 / 2KB 미만일 때만 그대로, 초과 시 `{PROJECT_DIR}/.consensus-review-output/input-{YYYYMMDD-HHMMSS}.md`로 저장 후 경로 사용.
+3. `{language}`: 문서 전반이 한글 문자 ≥50%면 "ko", 아니면 "en".
+4. `{doc_type_hint}`: 파일명에 `prd|spec|requirements|nda|rfc|architecture` 매치 또는 본문 첫 200자에서 직접 매치되는 키워드 → 해당 유형. 매치 없으면 "general".
 
 **예시**: `requirements.md` → "requirements"; 본문에 "1조(목적)", "비밀유지" → "NDA".
+
+> 📝 **왜 프로젝트 디렉토리인가**: `/tmp`는 샌드박스/컨테이너 환경에서 서브에이전트가 접근 불가할 수 있고, 세션 종료 시 날아갑니다. 프로젝트 디렉토리에 저장하면 (1) 권한 이슈 회피, (2) 중간 산출물 재확인/디버깅 가능, (3) 리뷰 대상 문서와 같은 공간에 격리됩니다. `.`으로 시작하는 숨김 폴더라 일반 파일 탐색을 방해하지 않습니다. `.gitignore`에 추가할지는 **사용자 판단**에 맡깁니다 — 스킬은 건드리지 않습니다.
 
 ### Step 2. N명 독립 리뷰어 실행 (서브에이전트 병렬 호출)
 
@@ -34,8 +41,10 @@ N명의 독립 서브에이전트 리뷰어를 병렬 실행해 문서 결함을
 리뷰어 출력이 서로 격리되도록 **세션마다 고유 디렉토리**를 만듭니다.
 
 1. `SESSION_ID` 생성: `{YYYYMMDD-HHMMSS}-{4자 난수}` 형태. 예: `20260428-022810-a3f7`
-2. 메인이 `mkdir -p /tmp/consensus-review-{SESSION_ID}/` 실행
-3. 각 서브에이전트의 output 경로: `/tmp/consensus-review-{SESSION_ID}/reviewer-{N}.md` (N=1,2,3)
+2. 메인이 `mkdir -p {PROJECT_DIR}/.consensus-review-output/{SESSION_ID}/` 실행 (Step 1에서 결정한 `PROJECT_DIR`)
+3. 각 서브에이전트의 output 경로: `{PROJECT_DIR}/.consensus-review-output/{SESSION_ID}/reviewer-{N}.md` (N=1,2,3)
+
+**세션 산출물은 자동 정리하지 않습니다.** 이전 세션 디렉토리는 그대로 남아 디버깅/재현에 사용됩니다. 사용자가 필요하면 수동으로 삭제.
 
 #### 2-2. 왜 파일 기반인가 (raw 원문 보존)
 
@@ -49,7 +58,7 @@ N명의 독립 서브에이전트 리뷰어를 병렬 실행해 문서 결함을
 #### 2-3. 각 서브에이전트 호출 시 전달할 변수
 
 - `{document_path}` ← 원본 문서의 파일 경로 (기본). 500 단어 / 2KB 미만 인라인 텍스트만 예외.
-- `{output_path}` ← 이 리뷰어가 저장할 파일. 예: `/tmp/consensus-review-20260428-022810-a3f7/reviewer-1.md`
+- `{output_path}` ← 이 리뷰어가 저장할 파일. 예: `{PROJECT_DIR}/.consensus-review-output/20260428-022810-a3f7/reviewer-1.md`
 - `{language}` ← "ko" 또는 "en"
 - `{doc_type_hint}` ← "사업계획서", "기능정의서", "구현계획서", "architecture", "general" 중 하나
 
@@ -64,8 +73,8 @@ N명의 독립 서브에이전트 리뷰어를 병렬 실행해 문서 결함을
 
 #### 2-5. 서브에이전트가 절대 하지 말 것 (독립성 유지)
 
-- ❌ **`/tmp/consensus-review-*/` 하위의 다른 리뷰어 파일 읽기** (`reviewer-2.md`를 reviewer-1이 읽는 것 등)
-- ❌ **이전 세션(`/tmp/consensus-review-다른-SESSION_ID/`) 파일 참조**
+- ❌ **`.consensus-review-output/` 하위의 다른 리뷰어 파일 읽기** (같은 세션의 `reviewer-2.md`를 reviewer-1이 읽는 것 등)
+- ❌ **이전 세션(`.consensus-review-output/다른-SESSION_ID/`) 파일 참조**
 - ❌ **Main 대화 히스토리에서 "이전 리뷰" 언급 참조**
 - ❌ **`consensus-review-*.md` 패턴의 기존 결과 파일 참조** (과거 실행 결과)
 
@@ -83,7 +92,11 @@ N명의 독립 서브에이전트 리뷰어를 병렬 실행해 문서 결함을
 - 사용자가 **인라인 텍스트**(파일이 아닌 채팅 붙여넣기)로 문서를 제공했고,
 - **AND** 문서가 500 단어 / 2KB **미만**일 때.
 
-위 조건을 모두 만족하지 않으면 **반드시 파일로 먼저 저장한 뒤 경로를 전달**하세요. `/tmp/consensus-review-input-{YYYYMMDD-HHMMSS}.md` 같은 임시 경로 사용.
+위 조건을 모두 만족하지 않으면 **반드시 파일로 먼저 저장한 뒤 경로를 전달**하세요. `{PROJECT_DIR}/.consensus-review-output/input-{YYYYMMDD-HHMMSS}.md` 경로 사용 (Step 1).
+
+> ⚠️ **중요: 인라인 텍스트 저장 시 `document_path`도 함께 업데이트**
+>
+> 인라인 텍스트를 파일로 저장했다면, 서브에이전트에 전달하는 `{document_path}`는 **저장된 파일 경로**(`{PROJECT_DIR}/.consensus-review-output/input-*.md`)여야 합니다. 원본 텍스트를 그대로 `document_path`에 넣으면 병렬 호출 시 토큰이 N배로 부풀어 `InvalidJson`이 납니다.
 
 #### 2-7. 기타 주의
 
@@ -95,7 +108,7 @@ N명의 독립 서브에이전트 리뷰어를 병렬 실행해 문서 결함을
 실패/한계 상황에서 임의로 돌파하지 말고 아래 경로를 따르세요:
 
 - **문서 > 60K 토큰**: 청크 분할은 아직 미구현. 사용자에게 알리고 중단: *"문서가 60K 토큰을 초과합니다(X 토큰). 현재 버전은 청크 분할을 지원하지 않습니다. 섹션을 나눠서 주시겠습니까?"* **임의로 자르거나 요약하지 마세요**.
-- **`/tmp` 저장 실패** (디스크 풀/권한): 사용자에게 원인과 함께 보고하고 중단. **인라인 전달로 우회하지 마세요** — 토큰 한도를 넘겨 InvalidJson이 납니다.
+- **`.consensus-review-output/` 저장 실패** (디스크 풀/권한/읽기전용 디렉토리): 사용자에게 원인과 함께 보고하고 중단. 예: *"PROJECT_DIR({dir})에 쓰기 권한이 없습니다. 쓰기 가능한 다른 경로에서 실행하거나 권한을 조정해주세요."* **`/tmp` 같은 다른 경로로 자동 fallback하지 마세요** — 접근 이슈는 명시적으로 드러내야 합니다. **인라인 전달로 우회하지도 마세요** — 토큰 한도를 넘겨 InvalidJson이 납니다.
 - **서브에이전트 1명 `write_file` 실패 또는 타임아웃**: 남은 2명으로 진행. 최종 리포트 상단에 `"Reviewer X 실패 — N=2로 집계됨"`을 명시. 실패한 리뷰어를 같은 프롬프트로 재시도하지 마세요.
 - **서브에이전트가 "done" 대신 raw 내용을 return한 경우**: 해당 내용 무시하고 파일을 `read_file`로 직접 읽으세요. 서브에이전트 출력이 아니라 **파일이 정본**.
 
@@ -108,9 +121,9 @@ N명의 독립 서브에이전트 리뷰어를 병렬 실행해 문서 결함을
 서브에이전트 3명이 `done`을 return한 후:
 
 ```
-read_file /tmp/consensus-review-{SESSION_ID}/reviewer-1.md → raw_1
-read_file /tmp/consensus-review-{SESSION_ID}/reviewer-2.md → raw_2
-read_file /tmp/consensus-review-{SESSION_ID}/reviewer-3.md → raw_3
+read_file {PROJECT_DIR}/.consensus-review-output/{SESSION_ID}/reviewer-1.md → raw_1
+read_file {PROJECT_DIR}/.consensus-review-output/{SESSION_ID}/reviewer-2.md → raw_2
+read_file {PROJECT_DIR}/.consensus-review-output/{SESSION_ID}/reviewer-3.md → raw_3
 ```
 
 각 파일이 누락된 경우: Step 2-8의 "서브에이전트 1명 실패" 분기를 따름.
@@ -185,7 +198,12 @@ consensus-review-{원본파일명}-{YYYYMMDD-HHMMSS}.md
 
 **같은 문서를 여러 번 리뷰해도 타임스탬프가 달라 덮어쓰지 않습니다.** 리뷰 이력을 자동 보존합니다.
 
-**저장 후 검증**: `write` 툴 반환값을 확인한 뒤 Step 4b 요약을 출력하세요. 실패하면 차단 상황 분기의 `/tmp 저장 실패` 항목을 따르세요 — **본문을 채팅에 대신 덤프하지 마세요**.
+**저장 후 검증**: `write` 툴 반환값을 확인한 뒤 Step 4b 요약을 출력하세요. 실패하면 차단 상황 분기의 `.consensus-review-output/ 저장 실패` 항목을 따르세요 — **본문을 채팅에 대신 덤프하지 마세요**.
+
+> 📝 **최종 리포트는 원본 문서 옆, 중간 산출물은 `.consensus-review-output/` 안**
+>
+> - 최종 리포트(`consensus-review-{원본}-{timestamp}.md`): **원본 문서와 같은 디렉토리** — 사용자가 바로 발견.
+> - 중간 산출물(reviewer-1.md, reviewer-2.md, reviewer-3.md, input-*.md): `.consensus-review-output/{SESSION_ID}/` — 감춰져 있고 디버깅/재현용.
 
 #### 4b. 채팅은 **요약만** 출력 (상세 덤프 금지)
 

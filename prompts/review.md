@@ -4,7 +4,7 @@
 >
 > **변수**:
 > - `{document_path}` — 검토할 문서의 **파일 경로** (기본). 또는 500단어/2KB 미만 **인라인 텍스트** (예외).
-> - `{output_path}` — 리뷰 결과를 **저장할 파일 경로** (예: `/tmp/consensus-review-20260428-022810-a3f7/reviewer-1.md`). 메인 에이전트가 세션마다 고유 경로를 할당합니다.
+> - `{output_path}` — 리뷰 결과를 **저장할 파일 경로** (예: `<project_dir>/.consensus-review-output/20260428-022810-a3f7/reviewer-1.md`). 메인 에이전트가 세션마다 고유 경로를 할당합니다.
 > - `{language}` — "ko" 또는 "en"
 > - `{doc_type_hint}` — "사업계획서", "기능정의서", "구현계획서", "general", "PRD", "NDA" 등
 
@@ -154,7 +154,7 @@ You are a **fully independent reviewer**. Your judgment must not be influenced b
 
 **Files you are STRICTLY PROHIBITED from reading**:
 - ❌ **Any other reviewer's output file** in the same session. Do not read `reviewer-2.md`, `reviewer-3.md`, or any sibling file in your `{output_path}` directory.
-- ❌ **Any file under `/tmp/consensus-review-*/`** from a previous session.
+- ❌ **Any file under `.consensus-review-output/`** from a previous session (different `SESSION_ID`).
 - ❌ **Any existing `consensus-review-*.md` aggregated report** (past results of this skill).
 - ❌ **Main agent's conversation history** referring to "previous reviews" or other reviewers' findings.
 
