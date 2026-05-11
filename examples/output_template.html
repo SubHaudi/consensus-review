@@ -1,0 +1,395 @@
+<!--
+  Consensus Review — HTML 리포트 템플릿 (자기완결형)
+
+  사용 방법:
+  - 메인 에이전트가 집계 결과를 받은 뒤, 사용자가 HTML 형식을 명시적으로 요청한 경우 사용.
+  - 모든 {중괄호} 자리표시자를 실제 값으로 치환.
+  - 이슈는 {{ISSUES_LOOP}} 자리에 카드 형태로 반복 삽입 (주석 참조).
+  - CSS/JS 인라인. 외부 의존성 0. 파일 하나로 동작.
+
+  치환 규칙:
+  - {제목}, {N}, {X}/{Y}/{Z}, {a}/{b}/{c}, {ISSUES_HTML} 만 치환.
+  - 이모지(🔴🟡⚪📋💡)는 리터럴.
+  - severity-card 클래스는 tier에 따라 .severity-high / .severity-mid / .severity-low.
+-->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 Consensus Review — {원본파일명}</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --bg-card: #ffffff;
+    --text: #1c1917;
+    --text-sub: #57534e;
+    --border: #e7e5e4;
+    --high: #dc2626;
+    --high-bg: #fef2f2;
+    --mid: #d97706;
+    --mid-bg: #fffbeb;
+    --low: #6b7280;
+    --low-bg: #f9fafb;
+    --quote-bg: #fef3c7;
+    --code-bg: #f3f4f6;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0c0a09;
+      --bg-card: #1c1917;
+      --text: #fafaf9;
+      --text-sub: #a8a29e;
+      --border: #292524;
+      --high: #f87171;
+      --high-bg: #450a0a;
+      --mid: #fbbf24;
+      --mid-bg: #451a03;
+      --low: #9ca3af;
+      --low-bg: #1f2937;
+      --quote-bg: #422006;
+      --code-bg: #292524;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  .container { max-width: 920px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  /* Header */
+  .header { border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 32px; }
+  .header h1 { font-size: 1.8em; margin: 0 0 8px; font-weight: 800; }
+  .header .meta { color: var(--text-sub); font-size: 0.95em; }
+  .header .meta strong { color: var(--text); }
+
+  /* Summary bar */
+  .summary {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin: 24px 0;
+  }
+  .summary-pill {
+    padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: 0.95em;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .summary-pill.high { background: var(--high-bg); color: var(--high); border: 1px solid var(--high); }
+  .summary-pill.mid  { background: var(--mid-bg);  color: var(--mid);  border: 1px solid var(--mid); }
+  .summary-pill.low  { background: var(--low-bg);  color: var(--low);  border: 1px solid var(--low); }
+  .summary-pill.total { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); }
+
+  /* Reviewer breakdown */
+  .reviewer-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+  .reviewer-table th, .reviewer-table td {
+    padding: 10px 14px; text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95em;
+  }
+  .reviewer-table th { background: var(--bg-card); font-weight: 700; color: var(--text-sub); }
+  .reviewer-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+
+  /* Filter toggle */
+  .filter-bar {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin: 32px 0 16px;
+    padding: 12px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border);
+  }
+  .filter-bar .filter-label {
+    font-size: 0.85em; color: var(--text-sub); align-self: center; margin-right: 8px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .filter-btn {
+    padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text); cursor: pointer; font-size: 0.9em;
+    font-family: inherit; font-weight: 600; transition: all 0.15s;
+  }
+  .filter-btn:hover { background: var(--code-bg); }
+  .filter-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  /* Tier section header */
+  .tier-section { margin: 40px 0 16px; }
+  .tier-header {
+    display: flex; align-items: baseline; gap: 12px;
+    margin-bottom: 8px;
+  }
+  .tier-header h2 { margin: 0; font-size: 1.3em; font-weight: 800; }
+  .tier-header .count { color: var(--text-sub); font-weight: 600; font-size: 0.95em; }
+  .tier-section .desc { color: var(--text-sub); font-size: 0.9em; margin: 0 0 16px; }
+
+  /* Issue card */
+  .issue {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--low);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .issue.severity-high { border-left-color: var(--high); }
+  .issue.severity-mid  { border-left-color: var(--mid); }
+  .issue.severity-low  { border-left-color: var(--low); }
+
+  .issue summary {
+    list-style: none;
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 14px;
+    user-select: none;
+  }
+  .issue summary::-webkit-details-marker { display: none; }
+  .issue summary:hover { background: var(--code-bg); }
+  .issue summary::after {
+    content: "▸"; margin-left: auto; color: var(--text-sub);
+    transition: transform 0.2s;
+  }
+  .issue[open] summary::after { transform: rotate(90deg); }
+
+  .issue .iss-id {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.85em; padding: 3px 8px; border-radius: 4px;
+    background: var(--code-bg); color: var(--text-sub);
+    flex-shrink: 0;
+  }
+  .issue .iss-title { font-weight: 700; flex: 1; }
+  .issue.severity-high .iss-emoji { color: var(--high); }
+  .issue.severity-mid  .iss-emoji { color: var(--mid); }
+  .issue.severity-low  .iss-emoji { color: var(--low); }
+
+  /* Issue body */
+  .issue-body { padding: 0 20px 20px; }
+  .issue-meta {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .issue-meta .tag {
+    padding: 4px 10px; border-radius: 4px;
+    background: var(--code-bg); color: var(--text-sub);
+    font-size: 0.82em; font-weight: 600;
+  }
+  .issue-meta .tag.type { background: var(--low-bg); color: var(--text); }
+  .issue-meta .tag.severity-CRITICAL { background: var(--high-bg); color: var(--high); }
+  .issue-meta .tag.severity-MAJOR    { background: var(--mid-bg);  color: var(--mid); }
+  .issue-meta .tag.severity-MINOR    { background: var(--low-bg);  color: var(--low); }
+
+  .quotes { margin: 0 0 16px; padding: 0; list-style: none; }
+  .quotes li {
+    padding: 10px 14px; margin-bottom: 8px;
+    background: var(--quote-bg); border-radius: 6px;
+    font-size: 0.95em;
+    border-left: 3px solid var(--mid);
+  }
+  .quotes li .reviewer-tag {
+    display: inline-block; font-size: 0.8em;
+    color: var(--text-sub); font-weight: 700;
+    margin-left: 8px; padding: 2px 8px;
+    background: var(--bg); border-radius: 4px;
+  }
+  .quotes li mark {
+    background: transparent; color: var(--text);
+    font-weight: 600;
+  }
+
+  .reasoning {
+    margin: 0;
+    padding: 12px 16px;
+    background: var(--code-bg);
+    border-radius: 6px;
+    font-size: 0.95em;
+    color: var(--text);
+  }
+  .reasoning::before {
+    content: "💡 "; font-weight: 700;
+  }
+
+  /* Low confidence list */
+  .low-list { padding: 0; margin: 0; list-style: none; }
+  .low-list li {
+    padding: 10px 14px; margin-bottom: 6px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-left: 3px solid var(--low);
+    border-radius: 6px; font-size: 0.95em;
+  }
+  .low-list li .iss-id {
+    font-family: ui-monospace, monospace; font-size: 0.85em;
+    color: var(--text-sub); margin-right: 10px;
+  }
+
+  /* Footer */
+  footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-sub); font-size: 0.85em; text-align: center; }
+  footer a { color: var(--text-sub); }
+
+  /* Hidden state for filter */
+  .issue.hidden { display: none; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .container { padding: 20px 12px 60px; }
+    .header h1 { font-size: 1.4em; }
+    .summary-pill { padding: 8px 12px; font-size: 0.85em; }
+    .filter-bar { gap: 6px; }
+    .filter-btn { padding: 5px 10px; font-size: 0.85em; }
+    .issue summary { padding: 14px 14px; gap: 10px; }
+    .issue-body { padding: 0 14px 14px; }
+  }
+
+  /* Print: 모두 펼쳐서 인쇄 */
+  @media print {
+    .filter-bar { display: none; }
+    .issue { break-inside: avoid; }
+    details { open: ''; }
+    details > div { display: block !important; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <h1>📋 Consensus Review 결과</h1>
+    <div class="meta">
+      <strong>문서:</strong> {문서 이름}<br>
+      <strong>리뷰어:</strong> {N}명 독립 (Consensus Review 스킬)<br>
+      <strong>생성일:</strong> {YYYY-MM-DD HH:MM:SS}
+    </div>
+
+    <div class="summary">
+      <span class="summary-pill total">총 {총 개수}개</span>
+      <span class="summary-pill high">🔴 High {X}</span>
+      <span class="summary-pill mid">🟡 Mid {Y}</span>
+      <span class="summary-pill low">⚪ Low {Z}</span>
+    </div>
+
+    <table class="reviewer-table">
+      <thead><tr><th>리뷰어</th><th>발견 결함 수</th></tr></thead>
+      <tbody>
+        <tr><td>Reviewer 1</td><td>{a}건</td></tr>
+        <tr><td>Reviewer 2</td><td>{b}건</td></tr>
+        <tr><td>Reviewer 3</td><td>{c}건</td></tr>
+      </tbody>
+    </table>
+  </header>
+
+  <div class="filter-bar" role="toolbar" aria-label="이슈 필터">
+    <span class="filter-label">필터</span>
+    <button class="filter-btn active" data-filter="all">전체</button>
+    <button class="filter-btn" data-filter="high">🔴 High만</button>
+    <button class="filter-btn" data-filter="mid">🟡 Mid만</button>
+    <button class="filter-btn" data-filter="low">⚪ Low만</button>
+  </div>
+
+  <!-- ============================================================
+       🔴 HIGH CONFIDENCE — 전원 합의
+       각 이슈는 다음 구조의 <details class="issue severity-high"> 로 삽입.
+       시작 상태: open (기본 펼침)
+  ============================================================ -->
+  <section class="tier-section" data-tier="high">
+    <div class="tier-header">
+      <h2>🔴 High Confidence</h2>
+      <span class="count">— 전원 합의 ({X}개)</span>
+    </div>
+    <p class="desc">{N}명 전원이 지적한 이슈입니다. 우선 처리 대상.</p>
+
+    <!-- {{HIGH_ISSUES_LOOP}} - 각 이슈마다 아래 카드 반복 -->
+    <details class="issue severity-high" open data-tier="high">
+      <summary>
+        <span class="iss-id">ISS-1</span>
+        <span class="iss-emoji">🔴</span>
+        <span class="iss-title">{제목 ≤12 단어}</span>
+      </summary>
+      <div class="issue-body">
+        <div class="issue-meta">
+          <span class="tag type">{Inconsistency / Omission / Ambiguity / Terminology / Structural}</span>
+          <span class="tag severity-CRITICAL">{CRITICAL}</span>
+          <span class="tag">Agents {count}/{N}</span>
+          <span class="tag">Confidence {median}/10 (R1: {x}, R2: {y}, R3: {z})</span>
+          <span class="tag">Evidence {median}/5</span>
+        </div>
+        <ul class="quotes">
+          <li>📍 "<mark>{exact quote}</mark>"<span class="reviewer-tag">R1</span></li>
+          <li>📍 "<mark>{exact quote}</mark>"<span class="reviewer-tag">R2</span></li>
+          <li>📍 "<mark>{exact quote}</mark>"<span class="reviewer-tag">R3</span></li>
+        </ul>
+        <p class="reasoning">{≤40 words}</p>
+      </div>
+    </details>
+    <!-- /{{HIGH_ISSUES_LOOP}} -->
+  </section>
+
+  <!-- ============================================================
+       🟡 NEEDS REVIEW — 다수 합의
+       severity-mid / data-tier="mid", emoji 🟡
+  ============================================================ -->
+  <section class="tier-section" data-tier="mid">
+    <div class="tier-header">
+      <h2>🟡 Needs Review</h2>
+      <span class="count">— 다수 합의 ({Y}개)</span>
+    </div>
+    <p class="desc">2/{N}이 지적한 이슈. 검토 권장.</p>
+
+    <!-- {{MID_ISSUES_LOOP}} - 동일 구조, severity-mid -->
+  </section>
+
+  <!-- ============================================================
+       ⚪ LOW — 소수 지적 (콤팩트 리스트)
+  ============================================================ -->
+  <section class="tier-section" data-tier="low">
+    <div class="tier-header">
+      <h2>⚪ Low</h2>
+      <span class="count">— 소수 지적 ({Z}개)</span>
+    </div>
+    <p class="desc">1명만 지적. 환각 가능성이 상대적으로 큼.</p>
+
+    <ul class="low-list">
+      <!-- {{LOW_ISSUES_LOOP}} -->
+      <li><span class="iss-id">ISS-N</span><strong>{제목}</strong> — {한 줄 요약}</li>
+    </ul>
+  </section>
+
+  <!-- ============================================================
+       💡 권장 조치
+  ============================================================ -->
+  <section class="tier-section">
+    <div class="tier-header">
+      <h2>💡 권장 조치</h2>
+    </div>
+    <ul>
+      <li>🔴부터 우선 검토하세요. {N}명 전원 합의라 진짜 결함일 확률이 높습니다.</li>
+      <li>시간 여유가 있으면 🟡까지. 다수 합의라 정밀도 중간 이상입니다.</li>
+      <li>⚪는 리소스 여유 시에만. 환각 가능성이 상대적으로 큽니다.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Generated by <a href="https://github.com/SubHaudi/consensus-review">Consensus Review</a> · {N}=리뷰어 수 · 독립 LLM 병렬 호출 + Tier 집계
+  </footer>
+</div>
+
+<script>
+  // 필터 토글: data-filter 값과 일치하지 않는 이슈에 .hidden 부착
+  (function() {
+    const buttons = document.querySelectorAll('.filter-btn');
+    const issues = document.querySelectorAll('.issue, .low-list li');
+    const sections = document.querySelectorAll('.tier-section');
+
+    function applyFilter(filter) {
+      buttons.forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+      sections.forEach(s => {
+        const tier = s.dataset.tier;
+        if (!tier) return; // 권장 조치 섹션 등 tier 없는 섹션은 항상 표시
+        s.classList.toggle('hidden', filter !== 'all' && filter !== tier);
+        s.style.display = (filter !== 'all' && filter !== tier) ? 'none' : '';
+      });
+    }
+
+    buttons.forEach(b => b.addEventListener('click', () => applyFilter(b.dataset.filter)));
+  })();
+</script>
+</body>
+</html>

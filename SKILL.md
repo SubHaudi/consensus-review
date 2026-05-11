@@ -162,6 +162,8 @@ read_file {PROJECT_DIR}/.consensus-review-output/{SESSION_ID}/reviewer-3.md → 
 
 `examples/output_template.md`의 형식으로 최종 Markdown 리포트를 생성합니다. **파일 저장이 기본이고, 채팅 출력은 요약만 합니다.**
 
+> 💡 **HTML 리포트 모드 (옵션)**: 사용자가 명시적으로 HTML 출력을 요청하면("HTML로", "인터랙티브로", "단일 HTML 파일") `examples/output_template.html`을 베이스로 .html 파일을 생성하세요. 자세한 분기 규칙은 `examples/output_template.md`의 **C 섹션**을 참고. 명시 요청이 없으면 기본 .md로 진행. 영감: Simon Willison, "The Unreasonable Effectiveness of HTML" (2026-05-08).
+
 > 🔒 **불변식 (Invariant) — 반드시 지켜야 하는 규칙**
 >
 > **전체 리포트 본문은 한 응답에 오직 한 곳에만 등장합니다** — `write` 툴의 `content` 인자입니다.
@@ -195,6 +197,8 @@ consensus-review-{원본파일명}-{YYYYMMDD-HHMMSS}.md
 - `{원본파일명}`: 확장자 제외 (예: `requirements.md` → `requirements`)
 - `{YYYYMMDD-HHMMSS}`: 실행 시점 기준 초 단위 타임스탬프 (같은 초에 겹칠 확률 ≈ 0)
 - 예시: `consensus-review-requirements-20260426-152410.md`
+
+**HTML 모드일 경우** 동일 규칙으로 확장자만 `.html`: `consensus-review-requirements-20260426-152410.html`. 사용자가 "둘 다"라고 하면 같은 타임스탬프로 .md + .html 두 개 생성. 자세한 HTML 모드 규칙은 `examples/output_template.md` C 섹션.
 
 **같은 문서를 여러 번 리뷰해도 타임스탬프가 달라 덮어쓰지 않습니다.** 리뷰 이력을 자동 보존합니다.
 

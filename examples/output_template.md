@@ -174,3 +174,117 @@
 ## REMEMBER
 
 파일(A)과 채팅(B)은 **두 개의 완전히 다른 출력**입니다. 같은 본문을 양쪽에 절대 복제하지 마세요. `write.content`에는 A 템플릿, `assistant_text`에는 B 템플릿 리터럴 — 이 매핑을 어기면 **InvalidJson 크래시로 세션이 실패**합니다.
+
+---
+
+## C. HTML 리포트 모드 (옵션)
+
+기본 출력은 Markdown(A)입니다. **사용자가 명시적으로 HTML 출력을 요청한 경우에만** HTML 모드로 전환하세요.
+
+### 트리거 (Good 표현)
+
+- "HTML로 보여줘" / "HTML 리포트로 저장해줘" / "html report 만들어줘"
+- "인터랙티브로", "필터 기능 있게", "접고 펼치는 형태로"
+- "단일 HTML 파일로 줘", "브라우저로 볼 수 있게"
+
+**HTML이 아니라 Markdown을 원할 가능성이 높은 표현**: "보고서로", "리포트로", "정리해줘" — 그냥 A로 진행. 모호하면 되묻기: *"Markdown(.md)으로 저장할까요, HTML(.html)로 만들까요?"*
+
+### HTML 모드일 때의 변경점
+
+#### C-1. 파일 확장자와 경로
+
+```
+consensus-review-{원본}-{YYYYMMDD-HHMMSS}.html
+```
+
+- 같은 디렉토리(원본 문서 옆), 같은 타임스탬프 규칙. 확장자만 `.html`.
+- 사용자가 "둘 다"라고 하면 같은 타임스탬프로 `.md` + `.html` 두 개 생성.
+
+#### C-2. `write.content`에 담을 내용
+
+`examples/output_template.html`을 베이스로 다음을 치환하세요:
+
+| 자리표시자 | 치환값 |
+|---|---|
+| `{원본파일명}` | 원본 문서 파일명(확장자 제외) |
+| `{문서 이름}` | 원본 경로 또는 짧은 설명 |
+| `{N}` | 실제 성공한 리뷰어 수 |
+| `{총 개수}` / `{X}` / `{Y}` / `{Z}` | 총 이슈 / 🔴 / 🟡 / ⚪ 개수 |
+| `{a}` / `{b}` / `{c}` | 리뷰어별 발견 수 |
+| `{YYYY-MM-DD HH:MM:SS}` | 생성 시각 |
+| `{{HIGH_ISSUES_LOOP}}` | 🔴 이슈 카드 반복 (아래 C-3) |
+| `{{MID_ISSUES_LOOP}}` | 🟡 이슈 카드 반복 |
+| `{{LOW_ISSUES_LOOP}}` | ⚪ 콤팩트 리스트 항목 반복 |
+
+**자기완결형 원칙**: CSS와 JS는 모두 `<style>`/`<script>` 인라인. **외부 CDN/폰트 로드 금지** (오프라인에서도 열려야 함). `output_template.html` 그대로 유지하면 자동으로 충족됩니다.
+
+#### C-3. 이슈 카드 (HTML)
+
+🔴/🟡 이슈는 `<details class="issue severity-{high|mid}">` 카드로 렌더:
+
+```html
+<details class="issue severity-high" open data-tier="high">
+  <summary>
+    <span class="iss-id">ISS-1</span>
+    <span class="iss-emoji">🔴</span>
+    <span class="iss-title">인증 플로우와 스펙 §3.2 불일치</span>
+  </summary>
+  <div class="issue-body">
+    <div class="issue-meta">
+      <span class="tag type">Inconsistency</span>
+      <span class="tag severity-CRITICAL">CRITICAL</span>
+      <span class="tag">Agents 3/3</span>
+      <span class="tag">Confidence 9/10 (R1: 9, R2: 10, R3: 8)</span>
+      <span class="tag">Evidence 5/5</span>
+    </div>
+    <ul class="quotes">
+      <li>📍 "<mark>로그인 후 30분 비활성 시 자동 로그아웃</mark>"<span class="reviewer-tag">R1</span></li>
+      <li>📍 "<mark>세션 타임아웃은 1시간으로 설정</mark>"<span class="reviewer-tag">R2</span></li>
+      <li>📍 "<mark>auto-logout: 30min vs spec §3.2: 60min</mark>"<span class="reviewer-tag">R3</span></li>
+    </ul>
+    <p class="reasoning">스펙 §3.2와 본문 1.4절의 세션 타임아웃 값이 30분/60분으로 충돌. 둘 중 어느 쪽이 정인지 명시 필요.</p>
+  </div>
+</details>
+```
+
+**이스케이프 규칙**: 이슈 제목/Quote/Reasoning 안의 `<`, `>`, `&` 문자는 `&lt;`, `&gt;`, `&amp;`로 치환. 따옴표는 `&quot;` 사용 권장. **이슈 텍스트에 사용자 마크다운 표기가 있어도 그대로 텍스트로 출력**(HTML 직접 임베드 금지) — XSS/렌더 깨짐 방지.
+
+⚪ 이슈는 `<details>` 대신 `<ul class="low-list">` 안에 한 줄짜리 `<li>`로:
+
+```html
+<li><span class="iss-id">ISS-7</span><strong>용어 "세션"이 두 의미로 혼용</strong> — 인증 세션과 사용자 세션이 같은 단어로 쓰여 혼란.</li>
+```
+
+#### C-4. 채팅 응답(B)는 그대로
+
+HTML 모드여도 채팅 출력은 **B 템플릿** 그대로. 단 `📄 저장 경로`의 확장자만 `.html`로 변경:
+
+```
+✅ Consensus Review 완료
+
+📄 저장 경로: ./consensus-review-plan_v2-20260510-133000.html
+   (브라우저로 열어 보세요)
+
+📊 요약
+- ...
+```
+
+`open`이나 macOS `Finder`/`xdg-open` 호출은 **하지 마세요** (사용자 환경/허락 모름). 경로만 안내.
+
+#### C-5. 이점 (왜 옵션을 만들었나)
+
+1. **Tier별 접고 펼치기** (`<details>`) — 한눈에 요약, 클릭하면 상세
+2. **Quote 인라인 강조** (`<mark>`) — 원문 인용이 즉시 눈에 띔
+3. **필터 토글** — 🔴만 / 🟡만 보기 (JS 수십 줄)
+4. **Severity 색깔 코딩** — 카드 좌측 컬러 바
+5. **다크 모드 자동 대응** — `prefers-color-scheme`
+6. **인쇄/PDF 친화** — `@media print`로 모두 펼쳐 인쇄
+
+영감: Simon Willison, "The Unreasonable Effectiveness of HTML" (2026-05-08).
+
+#### C-6. 주의
+
+- ❌ 외부 CDN/폰트 로드 금지 (오프라인에서도 열려야 함)
+- ❌ HTML 본문을 `assistant_text`로 출력 금지 (Markdown 모드와 동일하게 InvalidJson 위험)
+- ❌ JavaScript에 외부 fetch/XHR 추가 금지 (정적 HTML이어야 함)
+- ✅ `output_template.html`의 CSS/JS는 그대로 유지하고, **데이터(이슈 카드)만 치환**하는 것이 안전
