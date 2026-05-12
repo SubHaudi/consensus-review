@@ -223,7 +223,7 @@ consensus-review-{원본}-{YYYYMMDD-HHMMSS}.html
 🔴/🟡 이슈는 `<details class="issue severity-{high|mid}">` 카드로 렌더:
 
 ```html
-<details class="issue severity-high" open data-tier="high">
+<details class="issue severity-high" data-tier="high">
   <summary>
     <span class="iss-id">ISS-1</span>
     <span class="iss-emoji">🔴</span>
@@ -238,14 +238,24 @@ consensus-review-{원본}-{YYYYMMDD-HHMMSS}.html
       <span class="tag">Evidence 5/5</span>
     </div>
     <ul class="quotes">
-      <li>📍 "<mark>로그인 후 30분 비활성 시 자동 로그아웃</mark>"<span class="reviewer-tag">R1</span></li>
-      <li>📍 "<mark>세션 타임아웃은 1시간으로 설정</mark>"<span class="reviewer-tag">R2</span></li>
-      <li>📍 "<mark>auto-logout: 30min vs spec §3.2: 60min</mark>"<span class="reviewer-tag">R3</span></li>
+      <li>📍 "<mark>로그인 후 30분 비활성 시 자동 로그아웃</mark>" (Spec §1.4)<span class="reviewer-tag">R1</span></li>
+      <li>📍 "<mark>세션 타임아웃은 1시간으로 설정</mark>" (Spec §3.2)<span class="reviewer-tag">R2</span></li>
+      <li>📍 "<mark>auto-logout: 30min vs spec §3.2: 60min</mark>" (Spec §3.2)<span class="reviewer-tag">R3</span></li>
     </ul>
     <p class="reasoning">스펙 §3.2와 본문 1.4절의 세션 타임아웃 값이 30분/60분으로 충돌. 둘 중 어느 쪽이 정인지 명시 필요.</p>
   </div>
 </details>
 ```
+
+> 🧠 **카드 enrichment는 페이지 하단 JS가 자동 수행합니다** (서버측에서 별도 마크업 불필요):
+> - 카드 접힘 상태에서도 보이는 `🔍 진단` / `👉 검토` / `📍 출처` 글랜스 영역
+> - `근거 인용 N건` 헤더가 quotes 위에 자동 추가
+> - `📍 출처`는 quote 끝의 `(괄호)` 패턴(예: `(Glossary)`, `(Req 3, AC1)`)에서 자동 추출
+> - `👉 검토`는 `tag.type` 값(Inconsistency / Omission / 불일치 / 누락 등)에서 자동 매핑
+>
+> 따라서 quote 끝에 **출처 괄호를 일관되게 붙여주세요** — `</mark>" ({출처})<span class="reviewer-tag">` 형식. 출처가 없으면 글랜스의 출처 라인도 자동 생략됩니다.
+>
+> `open` 속성은 붙이지 마세요 — 모든 이슈는 기본 접힘 상태로 시작합니다 (인쇄 시 JS가 자동 펼침).
 
 **이스케이프 규칙**: 이슈 제목/Quote/Reasoning 안의 `<`, `>`, `&` 문자는 `&lt;`, `&gt;`, `&amp;`로 치환. 따옴표는 `&quot;` 사용 권장. **이슈 텍스트에 사용자 마크다운 표기가 있어도 그대로 텍스트로 출력**(HTML 직접 임베드 금지) — XSS/렌더 깨짐 방지.
 
