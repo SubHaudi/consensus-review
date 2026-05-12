@@ -212,11 +212,43 @@ consensus-review-{원본}-{YYYYMMDD-HHMMSS}.html
 | `{총 개수}` / `{X}` / `{Y}` / `{Z}` | 총 이슈 / 🔴 / 🟡 / ⚪ 개수 |
 | `{a}` / `{b}` / `{c}` | 리뷰어별 발견 수 |
 | `{YYYY-MM-DD HH:MM:SS}` | 생성 시각 |
+| `{{TOP_ACTIONS_LOOP}}` | 상단 권장 조치 박스의 액션 항목 (아래 C-3a) |
 | `{{HIGH_ISSUES_LOOP}}` | 🔴 이슈 카드 반복 (아래 C-3) |
 | `{{MID_ISSUES_LOOP}}` | 🟡 이슈 카드 반복 |
 | `{{LOW_ISSUES_LOOP}}` | ⚪ 콤팩트 리스트 항목 반복 |
 
 **자기완결형 원칙**: CSS와 JS는 모두 `<style>`/`<script>` 인라인. **외부 CDN/폰트 로드 금지** (오프라인에서도 열려야 함). `output_template.html` 그대로 유지하면 자동으로 충족됩니다.
+
+#### C-3a. Top Actions 박스 (필터 위, 의사결정자용 요약)
+
+상단 `.top-actions` 박스는 **3~5개 핵심 액션**으로 의사결정자가 스크롤 없이 우선순위를 파악하게 합니다. 하단의 상세 권장 조치(`#detailed-recommendations`)와 **요약 + 상세** 페어로 동작합니다.
+
+**작성 규칙**:
+
+- **3~5개**가 적정. 6개 이상이면 의사결정 부담이 늘어나니 통합 또는 하단으로 이동.
+- 각 항목 = `<strong>{한 줄 액션}</strong> — {간단한 이유} ({관련 ISS 번호})` 형태.
+- 액션은 **동사로 시작** (예: "통합", "명문화", "교체"). "X에 대해 검토" 같은 막연한 표현 금지.
+- ISS 번호는 **🔴 우선**으로 묶기. 같은 root cause를 공유하는 ISS는 한 액션으로 묶음 (예: "ISS-1, ISS-10을 묶어 매핑 통합").
+- 🔴이 0개이면 박스 자체를 생략하거나 🟡 기준으로 작성하고 박스 좌측 컬러 바를 `--mid`로 변경.
+
+**예시**:
+
+```html
+<aside class="top-actions" aria-labelledby="top-actions-heading">
+  <h2 id="top-actions-heading">💡 먼저 처리할 일 (Top Actions)</h2>
+  <ol>
+    <li><strong>doc_type_hint 매핑 통합</strong> — 영문 키워드와 한국어 후보 값을 단일 표로 정리 (🔴 ISS-1, ISS-10).</li>
+    <li><strong>N 변수 일반화</strong> — reviewer-1/2/3 하드코딩을 N개 일반화로 교체 (🔴 ISS-2).</li>
+    <li><strong>외부 파일 의존성 명문화</strong> — aggregate.md / output_template.* 위치·존재 보장·fallback 추가 (🔴 ISS-3).</li>
+  </ol>
+  <p class="more">상세 가이드는 페이지 하단 <a href="#detailed-recommendations">권장 조치 섹션</a>을 참고하세요.</p>
+</aside>
+```
+
+**왜 분리했나**:
+- 하단 권장 조치는 톤이 일반적("🔴부터 우선 검토하세요...") — 모든 리포트에 공통.
+- 상단 Top Actions는 **이번 리포트 고유의 핵심 액션** — 매번 다르게 작성.
+- 의사결정자는 상단만 보면 되고, 실무자는 하단 + ISS 카드까지 본다.
 
 #### C-3. 이슈 카드 (HTML)
 
