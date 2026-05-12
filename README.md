@@ -11,7 +11,7 @@
 Kiro, Claude Code, Cursor, Codex CLI, Gemini CLI, OpenCode 등 Open Agent Skills 호환 도구 어디서든 바로 사용할 수 있습니다.
 
 📊 **Live sample report** — consensus-review를 자기 자신(`SKILL.md`)에 돌린 실제 결과:
-[**View HTML report →**](https://subhaudi.github.io/consensus-review/sample-report/skill-self-review.html)
+[**View HTML report →**](https://subhaudi.github.io/consensus-review/examples/sample-report/skill-self-review.html)
 
 ---
 
