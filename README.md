@@ -10,6 +10,9 @@
 
 Kiro, Claude Code, Cursor, Codex CLI, Gemini CLI, OpenCode 등 Open Agent Skills 호환 도구 어디서든 바로 사용할 수 있습니다.
 
+📊 **Live sample report** — consensus-review를 자기 자신(`SKILL.md`)에 돌린 실제 결과:
+[**View HTML report →**](https://subhaudi.github.io/consensus-review/sample-report/skill-self-review.html)
+
 ---
 
 ## Why consensus-review?
@@ -42,9 +45,12 @@ consensus-review/
 ├── references/
 │   └── benchmark_summary.md          # 설계 근거 (실험 결과)
 └── examples/
-    ├── output_template.md            # 사용자 보고 템플릿
+    ├── output_template.md            # 사용자 보고 템플릿 (Markdown)
+    ├── output_template.html          # 사용자 보고 템플릿 (HTML, 자기완결형)
     ├── sample_aws_architecture.md    # 샘플 입력 문서 (AWS 아키텍처)
-    └── sample_run.md                 # 샘플 실행 결과 (데모)
+    ├── sample_run.md                 # 샘플 실행 결과 (Markdown)
+    └── sample-report/
+        └── skill-self-review.html    # 라이브 샘플 — SKILL.md 자기 리뷰 (GitHub Pages)
 ```
 
 ---
@@ -258,6 +264,7 @@ inconsistencies, and unclear language.
 - `"리뷰어 5명으로 해줘"` → N=5 (기본 N=3)
 - `"보안 이슈만 봐줘"` → 프롬프트에 지시 추가
 - `"한국어로 출력해줘"` → 최종 리포트를 한국어로
+- `"HTML 리포트로 만들어줘"` → 인터랙티브 HTML(접고 펼치기, 필터, 다크모드) 출력. 기본은 Markdown.
 
 ---
 
@@ -270,6 +277,7 @@ inconsistencies, and unclear language.
 | 리뷰어 수 N | 3 | SKILL.md Step 2, 또는 사용자 요청으로 런타임 변경 |
 | 모델 | 사용자 설정 따라감 | 에이전트 툴 설정 |
 | 출력 언어 | 문서 언어 감지 (ko/en) | 사용자 요청으로 강제 가능 |
+| 출력 형식 | Markdown | 사용자 요청으로 HTML 전환 ("HTML로 보여줘") |
 | Tier 기준 | 🔴=3/3, 🟡=2/3, ⚪=1/3 | `prompts/aggregate.md` 변경 시 |
 | 결과 파일 저장 | `./consensus-review-{원본}-{YYYYMMDD-HHMMSS}.md` | SKILL.md Step 4 |
 
