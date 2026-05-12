@@ -208,6 +208,39 @@
   .tier-header .count { color: var(--text-sub); font-weight: 600; font-size: 0.95em; }
   .tier-section .desc { color: var(--text-sub); font-size: 0.9em; margin: 0 0 16px; }
 
+  /* Top Actions: 상단 요약형 권장 조치 박스 (의사결정자가 스크롤 없이 우선순위 파악) */
+  .top-actions {
+    margin: 28px 0 8px;
+    padding: 18px 22px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--high);
+    border-radius: 8px;
+  }
+  .top-actions h2 {
+    margin: 0 0 12px;
+    font-size: 1.05em;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .top-actions ol {
+    margin: 0;
+    padding-left: 22px;
+    color: var(--text);
+    font-size: 0.95em;
+    line-height: 1.6;
+  }
+  .top-actions ol li { margin-bottom: 6px; }
+  .top-actions ol li:last-child { margin-bottom: 0; }
+  .top-actions .more {
+    margin-top: 10px;
+    font-size: 0.85em;
+    color: var(--text-sub);
+  }
+  .top-actions .more a { color: var(--text-sub); }
+
   /* Issue card */
   .issue {
     background: var(--bg-card);
@@ -421,6 +454,25 @@
     </details>
   </header>
 
+  <!-- ============================================================
+       💡 TOP ACTIONS — 상단 요약형 권장 조치 (필터 위)
+       의사결정자가 스크롤 없이 "무엇부터 봐야 하는지" 파악.
+       - 3~5개 핵심 액션만. 각 항목 끝에 관련 ISS 번호를 괄호로 표기 (예: 🔴 ISS-1, ISS-3).
+       - 하단 #detailed-recommendations 섹션으로 점프하는 링크 포함.
+       - 🔴이 0개일 경우 박스 자체를 생략하거나 🟡 기준으로 작성.
+  ============================================================ -->
+  <aside class="top-actions" aria-labelledby="top-actions-heading">
+    <h2 id="top-actions-heading">💡 먼저 처리할 일 (Top Actions)</h2>
+    <ol>
+      <!-- {{TOP_ACTIONS_LOOP}} - 3~5개 핵심 액션. 각 액션은:
+           <li><strong>{한 줄 액션}</strong> — {간단한 이유 또는 묶인 ISS 번호}</li> -->
+      <li><strong>{핵심 액션 1}</strong> — {간단한 설명} (🔴 ISS-1).</li>
+      <li><strong>{핵심 액션 2}</strong> — {간단한 설명} (🔴 ISS-2, ISS-5).</li>
+      <li><strong>{핵심 액션 3}</strong> — {간단한 설명} (🔴 ISS-3).</li>
+    </ol>
+    <p class="more">상세 가이드는 페이지 하단 <a href="#detailed-recommendations">권장 조치 섹션</a>을 참고하세요.</p>
+  </aside>
+
   <div class="filter-bar" role="toolbar" aria-label="이슈 필터" id="filter-bar">
     <span class="filter-label" aria-hidden="true">필터</span>
     <button class="filter-btn" data-filter="all" aria-pressed="true">전체</button>
@@ -502,9 +554,9 @@
   </section>
 
   <!-- ============================================================
-       💡 권장 조치
+       💡 권장 조치 (하단 상세) — 상단 .top-actions에서 #detailed-recommendations 앵커로 링크됨
   ============================================================ -->
-  <section class="tier-section">
+  <section class="tier-section" id="detailed-recommendations">
     <div class="tier-header">
       <h2>💡 권장 조치</h2>
     </div>
