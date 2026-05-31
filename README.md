@@ -5,6 +5,14 @@
 >
 > 모델을 여러 개 섞을 필요 없이, 한 모델의 독립 실행만으로 혼자서는 놓치던 결함을 더 많이 잡아냅니다.
 
+<p align="center">
+  <img src="assets/consensus-demo.webp" alt="독립한 리뷰어 3명이 같은 문서를 스캔해 각자 결함을 찾고, 합의 수준으로 Tier를 매기는 과정" width="680">
+</p>
+
+<p align="center">
+  <sub>혼자서는 5/8 → 독립 리뷰어 셋이 합치면 7/8. <b>같은 모델이라도 독립 실행이 겹쳐지면 더 많이 잡습니다.</b></sub>
+</p>
+
 📊 **직접 보기** — consensus-review를 자기 자신(`SKILL.md`)에 돌린 실제 리포트:
 [**View live HTML report →**](https://nb3025.github.io/consensus-review/examples/sample-report/skill-self-review.html)
 
