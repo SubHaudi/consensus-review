@@ -131,68 +131,27 @@ Run without arguments to see all options:
 - macOS/Linux: `bash install.sh --help`
 - Windows: `.\install.ps1` (prompts interactively)
 
-### Manual installation
+<details>
+<summary><b>Manual installation</b> (curl → bash를 원치 않을 때 — 클릭해서 펼치기)</summary>
 
-If you prefer not to pipe curl to bash, clone the repo and copy manually.
+레포를 클론한 뒤, 위 [Supported tools](#supported-tools) 표의 **Install path**로 디렉토리를 복사하면 됩니다.
 
-**Kiro**
 ```bash
 git clone https://github.com/NB3025/consensus-review.git
-mkdir -p ~/.kiro/skills
-cp -r consensus-review ~/.kiro/skills/
-```
 
-**Claude Code**
-```bash
-git clone https://github.com/NB3025/consensus-review.git
+# 예: Claude Code (global) — 경로는 Supported tools 표 참조
 mkdir -p ~/.claude/skills
 cp -r consensus-review ~/.claude/skills/
 ```
 
-**Cursor**
-```bash
-git clone https://github.com/NB3025/consensus-review.git
-mkdir -p .cursor/skills
-cp -r consensus-review .cursor/skills/
-```
+도구만 바꾸면 동일합니다 — 대상 경로만 위 표에서 골라 `cp` 하세요 (예: Kiro → `~/.kiro/skills/`, Cursor → `./.cursor/skills/`).
 
-> **Note:** Cursor skills require setup:
-> 1. Switch to Nightly channel in Cursor Settings → Beta
-> 2. Enable Agent Skills in Cursor Settings → Rules
+**도구별 추가 설정:**
 
-**Codex CLI**
-```bash
-git clone https://github.com/NB3025/consensus-review.git
-mkdir -p ~/.agents/skills
-cp -r consensus-review ~/.agents/skills/
-```
+- **Cursor** — Settings → Beta에서 Nightly 채널 전환 + Settings → Rules에서 Agent Skills 활성화
+- **Gemini CLI** — preview 버전 필요: `npm i -g @google/gemini-cli@preview` 후 `/settings`에서 "Skills" 활성화
 
-**Gemini CLI**
-```bash
-git clone https://github.com/NB3025/consensus-review.git
-mkdir -p .gemini/skills
-cp -r consensus-review .gemini/skills/
-```
-
-> **Note:** Gemini CLI skills require preview version:
-> ```bash
-> npm i -g @google/gemini-cli@preview
-> ```
-> Then run `/settings` and enable "Skills".
-
-**OpenCode**
-```bash
-git clone https://github.com/NB3025/consensus-review.git
-mkdir -p .opencode/skills
-cp -r consensus-review .opencode/skills/
-```
-
-**GitHub Copilot**
-```bash
-git clone https://github.com/NB3025/consensus-review.git
-mkdir -p .github/skills
-cp -r consensus-review .github/skills/
-```
+</details>
 
 ### Other Open Agent Skills compatible tools
 
