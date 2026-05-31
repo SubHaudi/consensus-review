@@ -6,7 +6,7 @@
 > 모델을 여러 개 섞을 필요 없이, 한 모델의 독립 실행만으로 혼자서는 놓치던 결함을 더 많이 잡아냅니다.
 
 <p align="center">
-  <img src="assets/consensus-demo.webp" alt="독립한 리뷰어 3명이 같은 문서를 스캔해 각자 결함을 찾고, 합의 수준으로 Tier를 매기는 과정" width="680">
+  <img src="assets/consensus-demo.gif" alt="동일한 LLM을 독립 리뷰어 여러 명으로 실행해 같은 문서를 각자 스캔하고, 합의 수준으로 Tier를 매기는 과정" width="680">
 </p>
 
 <p align="center">
