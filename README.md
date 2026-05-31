@@ -1,8 +1,12 @@
 # consensus-review
 
-> **Multi-agent document review skill** — N명의 독립 LLM 리뷰어를 병렬로 돌려 문서 결함을 탐지하고, 합의 수준으로 우선순위를 매깁니다.
+> **문서 리뷰를 AI 한 명에게 맡기면, 매번 다른 결함을 놓칩니다.**
+> consensus-review는 여러 LLM 리뷰어에게 **동시에** 문서를 보여주고, 그들이 찾은 결함을 합치고, **몇 명이 동의했는지로 우선순위**를 매겨줍니다.
 >
-> **6 LLMs × 3 benchmarks × 10,200+ ground-truth defects**로 검증 — 단일 리뷰 대비 재현율 **+6.5 ~ +30.6%p** (18/18 조합 통계적 유의).
+> 혼자 놓치던 결함을 여러 명이 잡아주고, 어떤 지적을 먼저 봐야 하는지까지 알려줍니다.
+
+📊 **직접 보기** — consensus-review를 자기 자신(`SKILL.md`)에 돌린 실제 리포트:
+[**View live HTML report →**](https://subhaudi.github.io/consensus-review/examples/sample-report/skill-self-review.html)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Recall](https://img.shields.io/badge/recall-%2B6.5~%2B30.6%25p-brightgreen.svg)](references/benchmark_summary.md)
@@ -17,23 +21,13 @@
 [![OpenCode](https://img.shields.io/badge/OpenCode-supported-success.svg)](#supported-tools)
 [![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-supported-success.svg)](#supported-tools)
 
-> "단일 LLM 리뷰는 매번 다른 결함을 놓친다. 여러 명이 동시에 보면 놓치는 게 줄어든다."
->
-> "다수결은 함정이다 — 한 명만 본 결함도 실제 결함일 수 있다."
->
-> "합의 수준(consensus) 자체가 무료 품질 신호다."
-
 Kiro, Claude Code, Cursor, Codex CLI, Gemini CLI, OpenCode 등 Open Agent Skills 호환 도구 어디서든 바로 사용할 수 있습니다.
-
-📊 **Live sample report** — consensus-review를 자기 자신(`SKILL.md`)에 돌린 실제 결과:
-[**View HTML report →**](https://subhaudi.github.io/consensus-review/examples/sample-report/skill-self-review.html)
 
 ---
 
 ## Table of Contents
 
 - [Why consensus-review?](#why-consensus-review)
-- [What's included](#whats-included)
 - [Installation](#installation)
   - [One-line install](#one-line-install-linux--macos)
   - [Supported tools](#supported-tools)
@@ -41,6 +35,7 @@ Kiro, Claude Code, Cursor, Codex CLI, Gemini CLI, OpenCode 등 Open Agent Skills
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
 - [How it works](#how-it-works)
+- [What's included](#whats-included)
 - [Limitations](#limitations)
 - [Contributing](#contributing)
 - [License](#license)
@@ -60,31 +55,6 @@ consensus-review는 이 관찰을 바탕으로 설계되었습니다:
 - 🧩 **도구 중립** — Open Agent Skills 표준, 어느 에이전틱 도구에서도 작동
 
 상세 근거: [`references/benchmark_summary.md`](references/benchmark_summary.md)
-
----
-
-## What's included
-
-```
-consensus-review/
-├── SKILL.md                          # 스킬 진입점 (에이전트가 읽음)
-├── README.md                         # 이 파일 (사람이 읽음)
-├── LICENSE                           # MIT
-├── install.sh                        # Linux/macOS 원샷 설치 스크립트
-├── install.ps1                       # Windows PowerShell 설치 스크립트
-├── prompts/
-│   ├── review.md                     # 서브에이전트용 리뷰 프롬프트
-│   └── aggregate.md                  # 메인 에이전트용 집계 프롬프트
-├── references/
-│   └── benchmark_summary.md          # 설계 근거 (실험 결과)
-└── examples/
-    ├── output_template.md            # 사용자 보고 템플릿 (Markdown)
-    ├── output_template.html          # 사용자 보고 템플릿 (HTML, 자기완결형)
-    ├── sample_aws_architecture.md    # 샘플 입력 문서 (AWS 아키텍처)
-    ├── sample_run.md                 # 샘플 실행 결과 (Markdown)
-    └── sample-report/
-        └── skill-self-review.html    # 라이브 샘플 — SKILL.md 자기 리뷰 (GitHub Pages)
-```
 
 ---
 
@@ -345,6 +315,31 @@ consensus-review-*-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]
 | 🟡 정밀도 | 30~40% |
 | ⚪ 정밀도 | 15~20% |
 | 확률적 실패 검증 | 18/18 조합에서 이항분포 기각, 베타-이항 적합 |
+
+---
+
+## What's included
+
+```
+consensus-review/
+├── SKILL.md                          # 스킬 진입점 (에이전트가 읽음)
+├── README.md                         # 이 파일 (사람이 읽음)
+├── LICENSE                           # MIT
+├── install.sh                        # Linux/macOS 원샷 설치 스크립트
+├── install.ps1                       # Windows PowerShell 설치 스크립트
+├── prompts/
+│   ├── review.md                     # 서브에이전트용 리뷰 프롬프트
+│   └── aggregate.md                  # 메인 에이전트용 집계 프롬프트
+├── references/
+│   └── benchmark_summary.md          # 설계 근거 (실험 결과)
+└── examples/
+    ├── output_template.md            # 사용자 보고 템플릿 (Markdown)
+    ├── output_template.html          # 사용자 보고 템플릿 (HTML, 자기완결형)
+    ├── sample_aws_architecture.md    # 샘플 입력 문서 (AWS 아키텍처)
+    ├── sample_run.md                 # 샘플 실행 결과 (Markdown)
+    └── sample-report/
+        └── skill-self-review.html    # 라이브 샘플 — SKILL.md 자기 리뷰 (GitHub Pages)
+```
 
 ---
 
