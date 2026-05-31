@@ -1,14 +1,14 @@
 # install.ps1 — consensus-review one-line installer for Windows (PowerShell)
 #
 # Usage:
-#   irm https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/NB3025/consensus-review/main/install.ps1 | iex
 #   # (interactive; will prompt for tool)
 #
-#   $env:CR_TOOL='kiro'; irm https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.ps1 | iex
+#   $env:CR_TOOL='kiro'; irm https://raw.githubusercontent.com/NB3025/consensus-review/main/install.ps1 | iex
 #   # (non-interactive; tool preset via env var)
 #
 # Or download first, then run:
-#   irm https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.ps1 -OutFile install.ps1
+#   irm https://raw.githubusercontent.com/NB3025/consensus-review/main/install.ps1 -OutFile install.ps1
 #   .\install.ps1 -Tool kiro
 #
 # Supported tools:
@@ -27,7 +27,7 @@
 param(
     [string]$Tool = $env:CR_TOOL,
     [string]$Ref = $(if ($env:CR_REF) { $env:CR_REF } else { 'main' }),
-    [string]$Repo = $(if ($env:CR_REPO) { $env:CR_REPO } else { 'https://github.com/SubHaudi/consensus-review' })
+    [string]$Repo = $(if ($env:CR_REPO) { $env:CR_REPO } else { 'https://github.com/NB3025/consensus-review' })
 )
 
 $ErrorActionPreference = 'Stop'

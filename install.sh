@@ -2,7 +2,7 @@
 # install.sh — consensus-review one-line installer
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.sh | bash -s <tool>
+#   curl -fsSL https://raw.githubusercontent.com/NB3025/consensus-review/main/install.sh | bash -s <tool>
 #
 # Supported tools:
 #   kiro         → ~/.kiro/skills/consensus-review
@@ -23,11 +23,11 @@
 #
 # Environment variables:
 #   CONSENSUS_REVIEW_REF   Branch/tag to install (default: main)
-#   CONSENSUS_REVIEW_REPO  Repo URL (default: https://github.com/SubHaudi/consensus-review)
+#   CONSENSUS_REVIEW_REPO  Repo URL (default: https://github.com/NB3025/consensus-review)
 
 set -euo pipefail
 
-REPO="${CONSENSUS_REVIEW_REPO:-https://github.com/SubHaudi/consensus-review}"
+REPO="${CONSENSUS_REVIEW_REPO:-https://github.com/NB3025/consensus-review}"
 REF="${CONSENSUS_REVIEW_REF:-main}"
 SKILL_NAME="consensus-review"
 

@@ -6,7 +6,7 @@
 > 모델을 여러 개 섞을 필요 없이, 한 모델의 독립 실행만으로 혼자서는 놓치던 결함을 더 많이 잡아냅니다.
 
 📊 **직접 보기** — consensus-review를 자기 자신(`SKILL.md`)에 돌린 실제 리포트:
-[**View live HTML report →**](https://subhaudi.github.io/consensus-review/examples/sample-report/skill-self-review.html)
+[**View live HTML report →**](https://nb3025.github.io/consensus-review/examples/sample-report/skill-self-review.html)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Recall](https://img.shields.io/badge/recall-%2B6.5~%2B30.6%25p-brightgreen.svg)](references/benchmark_summary.md)
@@ -63,7 +63,7 @@ consensus-review는 이 관찰을 바탕으로 설계되었습니다:
 ### One-line install (Linux / macOS)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.sh | bash -s <tool>
+curl -fsSL https://raw.githubusercontent.com/NB3025/consensus-review/main/install.sh | bash -s <tool>
 ```
 
 ### One-line install (Windows PowerShell)
@@ -71,14 +71,14 @@ curl -fsSL https://raw.githubusercontent.com/SubHaudi/consensus-review/main/inst
 **Recommended — download first, then run** (safer, supports interactive overwrite prompts):
 
 ```powershell
-irm https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.ps1 -OutFile install.ps1
+irm https://raw.githubusercontent.com/NB3025/consensus-review/main/install.ps1 -OutFile install.ps1
 .\install.ps1 -Tool kiro
 ```
 
 **One-liner via env var** (non-interactive):
 
 ```powershell
-$env:CR_TOOL='kiro'; irm https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.ps1 | iex
+$env:CR_TOOL='kiro'; irm https://raw.githubusercontent.com/NB3025/consensus-review/main/install.ps1 | iex
 ```
 
 > **Note:** Windows install requires `tar` (built-in on Windows 10 1803+ and Windows 11) and PowerShell 5.1+.
@@ -104,15 +104,15 @@ Replace `<tool>` / `-Tool` with one of:
 
 ```bash
 # macOS/Linux — Install globally for Kiro
-curl -fsSL https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.sh | bash -s kiro
+curl -fsSL https://raw.githubusercontent.com/NB3025/consensus-review/main/install.sh | bash -s kiro
 
 # macOS/Linux — Install for Claude Code in current project
-curl -fsSL https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.sh | bash -s claude-local
+curl -fsSL https://raw.githubusercontent.com/NB3025/consensus-review/main/install.sh | bash -s claude-local
 ```
 
 ```powershell
 # Windows PowerShell — Install globally for Kiro
-irm https://raw.githubusercontent.com/SubHaudi/consensus-review/main/install.ps1 -OutFile install.ps1
+irm https://raw.githubusercontent.com/NB3025/consensus-review/main/install.ps1 -OutFile install.ps1
 .\install.ps1 -Tool kiro
 
 # Windows PowerShell — Install for Claude Code
@@ -129,21 +129,21 @@ If you prefer not to pipe curl to bash, clone the repo and copy manually.
 
 **Kiro**
 ```bash
-git clone https://github.com/SubHaudi/consensus-review.git
+git clone https://github.com/NB3025/consensus-review.git
 mkdir -p ~/.kiro/skills
 cp -r consensus-review ~/.kiro/skills/
 ```
 
 **Claude Code**
 ```bash
-git clone https://github.com/SubHaudi/consensus-review.git
+git clone https://github.com/NB3025/consensus-review.git
 mkdir -p ~/.claude/skills
 cp -r consensus-review ~/.claude/skills/
 ```
 
 **Cursor**
 ```bash
-git clone https://github.com/SubHaudi/consensus-review.git
+git clone https://github.com/NB3025/consensus-review.git
 mkdir -p .cursor/skills
 cp -r consensus-review .cursor/skills/
 ```
@@ -154,14 +154,14 @@ cp -r consensus-review .cursor/skills/
 
 **Codex CLI**
 ```bash
-git clone https://github.com/SubHaudi/consensus-review.git
+git clone https://github.com/NB3025/consensus-review.git
 mkdir -p ~/.agents/skills
 cp -r consensus-review ~/.agents/skills/
 ```
 
 **Gemini CLI**
 ```bash
-git clone https://github.com/SubHaudi/consensus-review.git
+git clone https://github.com/NB3025/consensus-review.git
 mkdir -p .gemini/skills
 cp -r consensus-review .gemini/skills/
 ```
@@ -174,14 +174,14 @@ cp -r consensus-review .gemini/skills/
 
 **OpenCode**
 ```bash
-git clone https://github.com/SubHaudi/consensus-review.git
+git clone https://github.com/NB3025/consensus-review.git
 mkdir -p .opencode/skills
 cp -r consensus-review .opencode/skills/
 ```
 
 **GitHub Copilot**
 ```bash
-git clone https://github.com/SubHaudi/consensus-review.git
+git clone https://github.com/NB3025/consensus-review.git
 mkdir -p .github/skills
 cp -r consensus-review .github/skills/
 ```
