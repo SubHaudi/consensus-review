@@ -1,6 +1,21 @@
 # consensus-review
 
 > **Multi-agent document review skill** — N명의 독립 LLM 리뷰어를 병렬로 돌려 문서 결함을 탐지하고, 합의 수준으로 우선순위를 매깁니다.
+>
+> **6 LLMs × 3 benchmarks × 10,200+ ground-truth defects**로 검증 — 단일 리뷰 대비 재현율 **+6.5 ~ +30.6%p** (18/18 조합 통계적 유의).
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Recall](https://img.shields.io/badge/recall-%2B6.5~%2B30.6%25p-brightgreen.svg)](references/benchmark_summary.md)
+[![Benchmarks](https://img.shields.io/badge/benchmarks-3%20(law%2Ffact%2FMT)-blue.svg)](references/benchmark_summary.md)
+[![Open Agent Skills](https://img.shields.io/badge/Open%20Agent%20Skills-compatible-blueviolet.svg)](#installation)
+
+[![Kiro](https://img.shields.io/badge/Kiro-supported-success.svg)](#supported-tools)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-supported-success.svg)](#supported-tools)
+[![Cursor](https://img.shields.io/badge/Cursor-supported-success.svg)](#supported-tools)
+[![Codex CLI](https://img.shields.io/badge/Codex%20CLI-supported-success.svg)](#supported-tools)
+[![Gemini CLI](https://img.shields.io/badge/Gemini%20CLI-supported-success.svg)](#supported-tools)
+[![OpenCode](https://img.shields.io/badge/OpenCode-supported-success.svg)](#supported-tools)
+[![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-supported-success.svg)](#supported-tools)
 
 > "단일 LLM 리뷰는 매번 다른 결함을 놓친다. 여러 명이 동시에 보면 놓치는 게 줄어든다."
 >
@@ -12,6 +27,24 @@ Kiro, Claude Code, Cursor, Codex CLI, Gemini CLI, OpenCode 등 Open Agent Skills
 
 📊 **Live sample report** — consensus-review를 자기 자신(`SKILL.md`)에 돌린 실제 결과:
 [**View HTML report →**](https://subhaudi.github.io/consensus-review/examples/sample-report/skill-self-review.html)
+
+---
+
+## Table of Contents
+
+- [Why consensus-review?](#why-consensus-review)
+- [What's included](#whats-included)
+- [Installation](#installation)
+  - [One-line install](#one-line-install-linux--macos)
+  - [Supported tools](#supported-tools)
+  - [Manual installation](#manual-installation)
+- [Quick Start](#quick-start)
+- [Configuration](#configuration)
+- [How it works](#how-it-works)
+- [Limitations](#limitations)
+- [Contributing](#contributing)
+- [License](#license)
+- [References](#references)
 
 ---
 
