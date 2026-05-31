@@ -1,9 +1,9 @@
 # consensus-review
 
-> **문서 리뷰를 AI 한 명에게 맡기면, 매번 다른 결함을 놓칩니다.**
-> consensus-review는 여러 LLM 리뷰어에게 **동시에** 문서를 보여주고, 그들이 찾은 결함을 합치고, **몇 명이 동의했는지로 우선순위**를 매겨줍니다.
+> **문서 리뷰를 AI에게 한 번만 맡기면, 매번 다른 결함을 놓칩니다.**
+> consensus-review는 **같은 모델을 독립적인 리뷰어 여러 명으로** 병렬 실행해, 각자 찾은 결함을 합치고, **몇 명이 같은 지적을 했는지로 우선순위**를 매겨줍니다.
 >
-> 혼자 놓치던 결함을 여러 명이 잡아주고, 어떤 지적을 먼저 봐야 하는지까지 알려줍니다.
+> 모델을 여러 개 섮을 필요 없이, 한 모델의 독립 실행만으로 혼자서는 놓치던 결함을 더 많이 잡아냅니다.
 
 📊 **직접 보기** — consensus-review를 자기 자신(`SKILL.md`)에 돌린 실제 리포트:
 [**View live HTML report →**](https://subhaudi.github.io/consensus-review/examples/sample-report/skill-self-review.html)
